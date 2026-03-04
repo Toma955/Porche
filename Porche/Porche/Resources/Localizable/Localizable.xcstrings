@@ -1,0 +1,231 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "%lld Nm" : {
+
+    },
+    "%lld%%" : {
+
+    },
+    "▶" : {
+
+    },
+    "▼" : {
+
+    },
+    "app.title" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Porche eBike"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Porche eBike"
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Porche eBike"
+          }
+        }
+      }
+    },
+    "Assist Character" : {
+
+    },
+    "Assist Profile" : {
+
+    },
+    "Assist Start" : {
+
+    },
+    "Audio" : {
+
+    },
+    "Basic info" : {
+
+    },
+    "Battery" : {
+
+    },
+    "Bicikl" : {
+
+    },
+    "Charging" : {
+
+    },
+    "Clear" : {
+
+    },
+    "Create Route" : {
+
+    },
+    "Di2 Config" : {
+
+    },
+    "Diagnostics" : {
+
+    },
+    "Dobrodošli" : {
+
+    },
+    "Dozvole" : {
+
+    },
+    "Elevation" : {
+
+    },
+    "Elevation Route" : {
+
+    },
+    "Firmware Update" : {
+
+    },
+    "Garage" : {
+
+    },
+    "Grafovi i statistika vožnje." : {
+
+    },
+    "Graphics" : {
+
+    },
+    "Heatmap" : {
+
+    },
+    "Konzola (%lld)" : {
+
+    },
+    "Kopiraj" : {
+
+    },
+    "Kopirano!" : {
+
+    },
+    "Lokacija, Bluetooth" : {
+
+    },
+    "Manual" : {
+
+    },
+    "Mode" : {
+
+    },
+    "Motor Tuning" : {
+
+    },
+    "Nađi me" : {
+
+    },
+    "Nastavi" : {
+
+    },
+    "Notifications" : {
+
+    },
+    "Pair your bike" : {
+
+    },
+    "Parametri" : {
+
+    },
+    "Pokreni bez navigacije" : {
+
+    },
+    "Pokreni navigaciju" : {
+
+    },
+    "Poništi" : {
+
+    },
+    "Porche eBike" : {
+
+    },
+    "Porsche Account" : {
+
+    },
+    "Porsche ID Login" : {
+
+    },
+    "Post-ride" : {
+
+    },
+    "Postavke" : {
+
+    },
+    "Postavke aplikacije i uređaja." : {
+
+    },
+    "Pre-ride" : {
+
+    },
+    "Privacy" : {
+
+    },
+    "Profile" : {
+
+    },
+    "Ride" : {
+
+    },
+    "Ride Detail" : {
+
+    },
+    "Ride History" : {
+
+    },
+    "Ride: %.0f km/h · %lld%%" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Ride: %1$.0f km/h · %2$lld%%"
+          }
+        }
+      }
+    },
+    "Rider profile" : {
+
+    },
+    "Route Detail" : {
+
+    },
+    "Route Planner" : {
+
+    },
+    "Routes" : {
+
+    },
+    "Service" : {
+
+    },
+    "Service History" : {
+
+    },
+    "Settings" : {
+
+    },
+    "Statistika" : {
+
+    },
+    "Stats" : {
+
+    },
+    "Status bicikla, baterija, motor." : {
+
+    },
+    "Weather" : {
+
+    },
+    "Završi" : {
+
+    }
+  },
+  "version" : "1.0"
+}

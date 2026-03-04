@@ -1,0 +1,577 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXContainerItemProxy section */
+		F031AE622F58751000BC6D30 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F031AE492F58750F00BC6D30 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F031AE502F58750F00BC6D30;
+			remoteInfo = Porche;
+		};
+		F031AE6C2F58751000BC6D30 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F031AE492F58750F00BC6D30 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F031AE502F58750F00BC6D30;
+			remoteInfo = Porche;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		F031AE512F58750F00BC6D30 /* Porche.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Porche.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F031AE612F58751000BC6D30 /* PorcheTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PorcheTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		F031AE6B2F58751000BC6D30 /* PorcheUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PorcheUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		F031AE532F58750F00BC6D30 /* Porche */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Porche;
+			sourceTree = "<group>";
+		};
+		F031AE642F58751000BC6D30 /* PorcheTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = PorcheTests;
+			sourceTree = "<group>";
+		};
+		F031AE6E2F58751000BC6D30 /* PorcheUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = PorcheUITests;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		F031AE4E2F58750F00BC6D30 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F031AE5E2F58751000BC6D30 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F031AE682F58751000BC6D30 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		F031AE482F58750F00BC6D30 = {
+			isa = PBXGroup;
+			children = (
+				F031AE532F58750F00BC6D30 /* Porche */,
+				F031AE642F58751000BC6D30 /* PorcheTests */,
+				F031AE6E2F58751000BC6D30 /* PorcheUITests */,
+				F031AE522F58750F00BC6D30 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		F031AE522F58750F00BC6D30 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				F031AE512F58750F00BC6D30 /* Porche.app */,
+				F031AE612F58751000BC6D30 /* PorcheTests.xctest */,
+				F031AE6B2F58751000BC6D30 /* PorcheUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		F031AE502F58750F00BC6D30 /* Porche */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F031AE752F58751000BC6D30 /* Build configuration list for PBXNativeTarget "Porche" */;
+			buildPhases = (
+				F031AE4D2F58750F00BC6D30 /* Sources */,
+				F031AE4E2F58750F00BC6D30 /* Frameworks */,
+				F031AE4F2F58750F00BC6D30 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				F031AE532F58750F00BC6D30 /* Porche */,
+			);
+			name = Porche;
+			packageProductDependencies = (
+			);
+			productName = Porche;
+			productReference = F031AE512F58750F00BC6D30 /* Porche.app */;
+			productType = "com.apple.product-type.application";
+		};
+		F031AE602F58751000BC6D30 /* PorcheTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F031AE782F58751000BC6D30 /* Build configuration list for PBXNativeTarget "PorcheTests" */;
+			buildPhases = (
+				F031AE5D2F58751000BC6D30 /* Sources */,
+				F031AE5E2F58751000BC6D30 /* Frameworks */,
+				F031AE5F2F58751000BC6D30 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				F031AE632F58751000BC6D30 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				F031AE642F58751000BC6D30 /* PorcheTests */,
+			);
+			name = PorcheTests;
+			packageProductDependencies = (
+			);
+			productName = PorcheTests;
+			productReference = F031AE612F58751000BC6D30 /* PorcheTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		F031AE6A2F58751000BC6D30 /* PorcheUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F031AE7B2F58751000BC6D30 /* Build configuration list for PBXNativeTarget "PorcheUITests" */;
+			buildPhases = (
+				F031AE672F58751000BC6D30 /* Sources */,
+				F031AE682F58751000BC6D30 /* Frameworks */,
+				F031AE692F58751000BC6D30 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				F031AE6D2F58751000BC6D30 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				F031AE6E2F58751000BC6D30 /* PorcheUITests */,
+			);
+			name = PorcheUITests;
+			packageProductDependencies = (
+			);
+			productName = PorcheUITests;
+			productReference = F031AE6B2F58751000BC6D30 /* PorcheUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		F031AE492F58750F00BC6D30 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1620;
+				LastUpgradeCheck = 1620;
+				TargetAttributes = {
+					F031AE502F58750F00BC6D30 = {
+						CreatedOnToolsVersion = 16.2;
+					};
+					F031AE602F58751000BC6D30 = {
+						CreatedOnToolsVersion = 16.2;
+						TestTargetID = F031AE502F58750F00BC6D30;
+					};
+					F031AE6A2F58751000BC6D30 = {
+						CreatedOnToolsVersion = 16.2;
+						TestTargetID = F031AE502F58750F00BC6D30;
+					};
+				};
+			};
+			buildConfigurationList = F031AE4C2F58750F00BC6D30 /* Build configuration list for PBXProject "Porche" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = F031AE482F58750F00BC6D30;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = F031AE522F58750F00BC6D30 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				F031AE502F58750F00BC6D30 /* Porche */,
+				F031AE602F58751000BC6D30 /* PorcheTests */,
+				F031AE6A2F58751000BC6D30 /* PorcheUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		F031AE4F2F58750F00BC6D30 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F031AE5F2F58751000BC6D30 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F031AE692F58751000BC6D30 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		F031AE4D2F58750F00BC6D30 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F031AE5D2F58751000BC6D30 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F031AE672F58751000BC6D30 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		F031AE632F58751000BC6D30 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F031AE502F58750F00BC6D30 /* Porche */;
+			targetProxy = F031AE622F58751000BC6D30 /* PBXContainerItemProxy */;
+		};
+		F031AE6D2F58751000BC6D30 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F031AE502F58750F00BC6D30 /* Porche */;
+			targetProxy = F031AE6C2F58751000BC6D30 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		F031AE732F58751000BC6D30 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		F031AE742F58751000BC6D30 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		F031AE762F58751000BC6D30 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"Porche/Preview Content\"";
+				DEVELOPMENT_TEAM = Q8997N27J9;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Bluetooth is used to connect to your e-bike.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Camera may be used for AR features.";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "Health data is used to save workouts.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Health data is used to save workouts.";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Location is used for ride tracking and navigation.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Location is used for ride tracking and navigation.";
+				INFOPLIST_KEY_UIAppFonts = "Resources/Fonts/Archivo,Cormorant_Garamond,Roboto_Condensed/Archivo-VariableFont_wdth,wght.ttf Resources/Fonts/Archivo,Cormorant_Garamond,Roboto_Condensed/Archivo-Italic-VariableFont_wdth,wght.ttf Resources/Fonts/Archivo,Cormorant_Garamond,Roboto_Condensed/static/Archivo-Regular.ttf Resources/Fonts/Archivo,Cormorant_Garamond,Roboto_Condensed/static/Archivo-Bold.ttf Resources/Fonts/Archivo,Cormorant_Garamond,Roboto_Condensed/static/Archivo-Medium.ttf Resources/Fonts/Archivo,Cormorant_Garamond,Roboto_Condensed/static/Archivo-Light.ttf Resources/Fonts/Archivo,Cormorant_Garamond,Roboto_Condensed/static/Archivo-SemiBold.ttf Resources/Fonts/Archivo,Cormorant_Garamond,Roboto_Condensed/static/Archivo-Italic.ttf Resources/Fonts/Archivo,Cormorant_Garamond,Roboto_Condensed/static/Archivo-BoldItalic.ttf";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = TomaPrivate.Porche;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		F031AE772F58751000BC6D30 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"Porche/Preview Content\"";
+				DEVELOPMENT_TEAM = Q8997N27J9;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Bluetooth is used to connect to your e-bike.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Camera may be used for AR features.";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "Health data is used to save workouts.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Health data is used to save workouts.";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Location is used for ride tracking and navigation.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Location is used for ride tracking and navigation.";
+				INFOPLIST_KEY_UIAppFonts = "Resources/Fonts/Archivo,Cormorant_Garamond,Roboto_Condensed/Archivo-VariableFont_wdth,wght.ttf Resources/Fonts/Archivo,Cormorant_Garamond,Roboto_Condensed/Archivo-Italic-VariableFont_wdth,wght.ttf Resources/Fonts/Archivo,Cormorant_Garamond,Roboto_Condensed/static/Archivo-Regular.ttf Resources/Fonts/Archivo,Cormorant_Garamond,Roboto_Condensed/static/Archivo-Bold.ttf Resources/Fonts/Archivo,Cormorant_Garamond,Roboto_Condensed/static/Archivo-Medium.ttf Resources/Fonts/Archivo,Cormorant_Garamond,Roboto_Condensed/static/Archivo-Light.ttf Resources/Fonts/Archivo,Cormorant_Garamond,Roboto_Condensed/static/Archivo-SemiBold.ttf Resources/Fonts/Archivo,Cormorant_Garamond,Roboto_Condensed/static/Archivo-Italic.ttf Resources/Fonts/Archivo,Cormorant_Garamond,Roboto_Condensed/static/Archivo-BoldItalic.ttf";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = TomaPrivate.Porche;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		F031AE792F58751000BC6D30 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = Q8997N27J9;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = TomaPrivate.PorcheTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Porche.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Porche";
+			};
+			name = Debug;
+		};
+		F031AE7A2F58751000BC6D30 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = Q8997N27J9;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = TomaPrivate.PorcheTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Porche.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Porche";
+			};
+			name = Release;
+		};
+		F031AE7C2F58751000BC6D30 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = Q8997N27J9;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = TomaPrivate.PorcheUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Porche;
+			};
+			name = Debug;
+		};
+		F031AE7D2F58751000BC6D30 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = Q8997N27J9;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = TomaPrivate.PorcheUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Porche;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		F031AE4C2F58750F00BC6D30 /* Build configuration list for PBXProject "Porche" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F031AE732F58751000BC6D30 /* Debug */,
+				F031AE742F58751000BC6D30 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F031AE752F58751000BC6D30 /* Build configuration list for PBXNativeTarget "Porche" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F031AE762F58751000BC6D30 /* Debug */,
+				F031AE772F58751000BC6D30 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F031AE782F58751000BC6D30 /* Build configuration list for PBXNativeTarget "PorcheTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F031AE792F58751000BC6D30 /* Debug */,
+				F031AE7A2F58751000BC6D30 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F031AE7B2F58751000BC6D30 /* Build configuration list for PBXNativeTarget "PorcheUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F031AE7C2F58751000BC6D30 /* Debug */,
+				F031AE7D2F58751000BC6D30 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = F031AE492F58750F00BC6D30 /* Project object */;
+}
