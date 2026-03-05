@@ -1,5 +1,4 @@
 import Foundation
-
 struct RideSession: Identifiable, Codable {
     let id: UUID
     var startDate: Date

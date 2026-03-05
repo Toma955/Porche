@@ -1,5 +1,4 @@
 import Foundation
-
 @MainActor
 final class OnboardingViewModel: ObservableObject {
     @Published var currentStep = 0

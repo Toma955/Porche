@@ -1,6 +1,5 @@
 import Foundation
 import ActivityKit
-
 struct EBikeAttributes: ActivityAttributes {
     struct ContentState: Codable, Hashable {
         var speed: Double

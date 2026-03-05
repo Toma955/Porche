@@ -1,7 +1,5 @@
 import SwiftUI
 import UIKit
-
-/// Ikone iz Assets.xcassets/Icons. Ako PNG nije u bundleu, koristi se SF Symbol.
 enum AppIcons {
     static let route = "Route"
     static let graph = "Graph"
@@ -12,15 +10,11 @@ enum AppIcons {
     static let island = "Island"
     static let moon = "Moon"
     static let paths = "Paths"
-
-    /// Navigacijske strelice (Resources/Icons/Navigation → Assets).
     static let turnLeft = "TurnLeft"
     static let turnRight = "TurnRight"
     static let forward = "Forward"
     static let turnBack = "TurnBack"
     static let compass = "Compass"
-
-    /// Dijelovi bicikla (Resources/Icons/parts) – za prikaz kad korisnik klikne na Bike.
     enum Part: String, CaseIterable {
         case oil
         case brake
@@ -45,16 +39,12 @@ enum AppIcons {
             }
         }
     }
-
-    /// Točna imena u folderu: oil, brake, service, wheels, gears, suspension, batery, engine, link (.png)
     private static let partsRelPaths = [
         "Resources/Icons/parts",
         "Porche/Resources/Icons/parts",
         "Icons/parts",
         "parts",
     ]
-
-    /// Ikona dijela (template) – učitava iz bundlea; nikad UIImage(named:) da ne ide u asset catalog i ne logira grešku.
     static func imagePart(_ part: Part) -> Image {
         let name = part.rawValue
         let bundle = Bundle.main
@@ -74,8 +64,6 @@ enum AppIcons {
         }
         return Image(systemName: "wrench.and.screwdriver").renderingMode(.template)
     }
-
-    /// SF Symbol fallback kad asset ne postoji.
     enum Symbol {
         static let route = "map"
         static let graph = "chart.bar"
@@ -92,16 +80,12 @@ enum AppIcons {
         static let turnBack = "arrow.uturn.backward"
         static let compass = "location.north.fill"
     }
-
-    /// Vraća sliku iz Assets ili SF Symbol ako asset ne postoji (nazivi točno: Route, Graph, Bike, Settings, BackArrow).
-    /// Asset ikone se vraćaju kao template da primaju boju iz .foregroundStyle() (npr. bijelu na crnom islandu).
     static func image(route: String = route, symbol: String) -> Image {
         if UIImage(named: route) != nil {
             return Image(route).renderingMode(.template)
         }
         return Image(systemName: symbol)
     }
-
     static var imageRoute: Image { image(route: route, symbol: Symbol.route) }
     static var imageGraph: Image { image(route: graph, symbol: Symbol.graph) }
     static var imageBike: Image { image(route: bike, symbol: Symbol.bike) }
@@ -117,7 +101,6 @@ enum AppIcons {
     static var imageTurnBack: Image { image(route: turnBack, symbol: Symbol.turnBack) }
     static var imageCompass: Image { image(route: compass, symbol: Symbol.compass) }
 }
-
 extension Image {
     static let iconRoute = AppIcons.imageRoute
     static let iconGraph = AppIcons.imageGraph

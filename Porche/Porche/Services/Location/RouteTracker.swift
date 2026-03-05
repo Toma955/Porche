@@ -1,6 +1,5 @@
 import Foundation
 import CoreLocation
-
 final class RouteTracker {
     func startTracking() {}
     func stopTracking() {}

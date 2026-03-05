@@ -1,6 +1,4 @@
 import Foundation
-
-/// toKmh, toNm, toWh, formatted
 extension Double {
     var toKmh: Double { self }
     var toNm: Double { self }

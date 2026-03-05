@@ -1,6 +1,4 @@
 import Foundation
-
-/// Glavni servis za E-TUBE komunikaciju
 final class ETubeService: ShimanoConfigurable {
     func readMotorProfile() async throws -> ShimanoMotorProfile {
         fatalError("TODO")

@@ -1,14 +1,11 @@
 import SwiftUI
 import MapKit
-
-// MARK: - Island na dnu ekrana
-// Početak: samo "Porche". Prvi klik → island se širi, pojave se gumbi (Route, Graph, Bike, Settings, chevron.down).
-// Klik na gumb → ispod se prikaže sadržaj tog gumba. Glavni natpis "Porche" uvijek na vrhu.
-
 private let islandSpring = Animation.spring(response: 0.35, dampingFraction: 0.82)
 private let islandSpringContent = Animation.spring(response: 0.4, dampingFraction: 0.8)
-
-/// Paleta boja islanda; kad je night = true, crne boje postaju narančaste (vožnja po noći).
+private let expandedContentTransition = AnyTransition.asymmetric(
+    insertion: .move(edge: .bottom).combined(with: .opacity),
+    removal: .move(edge: .bottom).combined(with: .opacity)
+)
 private struct IslandColorSet {
     let background: Color
     let backgroundExpanded: Color
@@ -16,13 +13,11 @@ private struct IslandColorSet {
     let title: Color
     let titleGradient: LinearGradient
     let accent: Color
-    /// Zelena u danu, #FF4B33 u noćnom modu (Mod, odabir na karti, itd.).
     let accentGreen: Color
     let secondary: Color
     let border: Color
     let buttonBg: Color
     let shadowColor: Color
-
     init(night: Bool) {
         if night {
             let orange = AppColors.nightRidingOrange
@@ -52,7 +47,6 @@ private struct IslandColorSet {
         }
     }
 }
-
 private struct IslandColorsEnvironmentKey: EnvironmentKey {
     static let defaultValue: IslandColorSet = IslandColorSet(night: false)
 }
@@ -62,19 +56,15 @@ extension EnvironmentValues {
         set { self[IslandColorsEnvironmentKey.self] = newValue }
     }
 }
-
-/// Island: sva četiri kuta uvijek zaobljena (i u vožnji i kad nije aktivna).
 private struct IslandShapeModifier: ViewModifier {
     let cornerRadius: CGFloat
     let backgroundExpanded: Color
     let background: Color
     let border: Color
     let isExpanded: Bool
-
     private var shape: RoundedRectangle {
         RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
     }
-
     func body(content: Content) -> some View {
         content
             .clipShape(shape)
@@ -85,8 +75,6 @@ private struct IslandShapeModifier: ViewModifier {
             )
     }
 }
-
-/// Vrsta smjera za uputu (da znamo rotirati „ravno” prema gore).
 private enum NavInstructionKind {
     case turnLeft, turnRight, forward, turnBack, compass
     var icon: Image {
@@ -98,68 +86,54 @@ private enum NavInstructionKind {
         case .compass: return AppIcons.imageCompass
         }
     }
-    /// Ravno (forward) treba rotirati 90° da gleda prema gore.
     var rotationDegrees: Double { self == .forward ? -90 : 0 }
 }
-
-/// Jedna uputa za navigaciju: smjer, preostala udaljenost (m); odbrojava se do 0 pa sljedeća.
 private struct NavInstructionItem: Identifiable {
     let id: UUID
     let kind: NavInstructionKind
     let distanceMeters: Double
+    let instructionText: String
     var icon: Image { kind.icon }
-    init(id: UUID = UUID(), kind: NavInstructionKind, distanceMeters: Double) {
+    init(id: UUID = UUID(), kind: NavInstructionKind, distanceMeters: Double, instructionText: String = "") {
         self.id = id
         self.kind = kind
         self.distanceMeters = distanceMeters
+        self.instructionText = instructionText
     }
 }
-
-/// Koji je gumb u islandu odabran (sadržaj ispod).
 private enum IslandSelectedButton: String, CaseIterable {
     case route
     case graph
     case bike
     case settings
 }
-
 struct PorcheIslandView: View {
     @EnvironmentObject private var appState: AppState
     @ObservedObject var island: Island
     var accentColor: Color = .white
-
     private var islandColors: IslandColorSet { IslandColorSet(night: appState.isNightRidingMode) }
     var isMapVisible: Bool = false
     var isFindMeMode: Bool = true
     var onFindMe: (() -> Void)? = nil
     var onCancelFindMe: (() -> Void)? = nil
     var onPokreniNavigaciju: ((Bool, String, String) -> Void)? = nil
-    /// Kad korisnik u vožnji stisne Island – povratak na početak (bicikl, rotacija).
     var onExitRide: (() -> Void)? = nil
-
     private let collapsedHeight: CGFloat = 88
     private let iconSizeExpanded: CGFloat = 62
-    /// Kad je proširen, samo red ikona (bez natpisa) – visina tog dijela.
     private var expandedPillSectionHeight: CGFloat { iconSizeExpanded + 28 }
     private let horizontalPadding: CGFloat = 20
-    /// Veći radijus + continuous stil da prati zaobljenost donjeg ruba ekrana.
     private let cornerRadius: CGFloat = 40
-
     @State private var showButtonsContent = false
-    /// Kad true, u vožnji se prikazuje panel s navigacijskim strelicama (upute) umjesto Odaziv/Moment/Podrška.
     @State private var showNavigationInstructionsInIsland = false
-    /// Za panel navigacije: ulica, lokacija, smjer (stupnjevi), upute s udaljenošću, falija (povratak). Upute se popunjavaju samo iz stvarne rute, ne automatski.
     @State private var navStreet: String = ""
     @State private var navLocation: String = ""
     @State private var navHeadingDegrees: Double = 0
     @State private var navInstructions: [NavInstructionItem] = []
+    @State private var navInstructionIndex: Int = 0
     @State private var navFailed: Bool = false
     @State private var navReturnMeters: Double = 0
-    @State private var navExpandFullscreen: Bool = false
     private let contentDelay: Double = 0.12
-    /// Klik na koji gumb – ispod se prikaže njegov sadržaj.
     @State private var selectedButton: IslandSelectedButton?
-    /// Destinacije za rutu (kao na Google Maps: od točke A do točke B).
     @State private var routeOrigin: String = ""
     @State private var routeDestination: String = ""
     @StateObject private var locationCompleter = LocationSearchCompleter()
@@ -168,10 +142,10 @@ struct PorcheIslandView: View {
     private enum DestinationField {
         case origin, destination
     }
-
+    @State private var pillPageIndex: Int = 0
+    @State private var pillDragOffset: CGFloat = 0
     private var isExpanded: Bool { island.state != .compact }
     private var hasRouteDestinations: Bool { !routeOrigin.isEmpty || !routeDestination.isEmpty }
-    /// Brzina + stupanj + motor panel prikazujemo kad je mapa/vožnja uključena (i "Pokreni navigaciju" i "Pokreni bez navigacije").
     private var isRideMapActive: Bool { appState.isRouteActive }
     private var navSpeed: Int { min(99, max(0, appState.navigationSpeed)) }
     private var navGear: Int { min(99, max(0, appState.navigationGear)) }
@@ -179,8 +153,13 @@ struct PorcheIslandView: View {
     private var gearRatioText: String { "\(min(maxGear, max(1, navGear)))/\(maxGear)" }
     private var batteryPercent: Int { appState.batteryStatus?.percent ?? 100 }
     private var batteryRangeKm: Double { appState.batteryStatus?.estimatedRangeKm ?? 99 }
-
-    /// Jedna ćelija u redu statistika. fontSize: nil = 28, manji za prijenos (npr. 22).
+    private var hasActiveRoute: Bool { (appState.activeRoute?.waypoints.isEmpty ?? true) == false }
+    private var pillPageCount: Int {
+        if !isRideMapActive { return 1 }
+        if hasActiveRoute { return 3 }
+        return 1
+    }
+    private var pillDefaultPageIndex: Int { 0 }
     private func rideModeStatCell(_ value: String, unit: String, fontSize: CGFloat? = nil) -> some View {
         let size = fontSize ?? 28
         return Group {
@@ -196,8 +175,6 @@ struct PorcheIslandView: View {
         .minimumScaleFactor(0.7)
         .frame(maxWidth: .infinity)
     }
-
-    /// Compact trak: gornji red = brojevi, donji red = opisi (km/h, Prijenos, Baterija, Domet).
     private func rideModeCompactCell(value: String, label: String) -> some View {
         VStack(spacing: 4) {
             Text(value)
@@ -212,20 +189,12 @@ struct PorcheIslandView: View {
         }
         .frame(maxWidth: .infinity)
     }
-
-    /// Unutarnji padding da sav sadržaj ostane unutar zaobljenog crnog područja (izbjegava izlazak na rubove).
     private let islandInnerPadding: CGFloat = 16
-    /// Visina reda brzine + omjera u vožnji (title3 + subheadline).
     private let rideModeSpeedRowHeight: CGFloat = 40
-    /// Visina reda gumba Mod.
     private let rideModeButtonsRowHeight: CGFloat = 44
-    /// Visina donjeg reda ikona (Moon, Paths, …).
     private let rideModeBottomBarHeight: CGFloat = 56
-    /// Red s 4 jednake ćelije: km/h, prijenos, baterija %, domet.
     private let rideModeStatsRowSpacing: CGFloat = 8
-    /// Unutarnji prostor skoro do rubova da se sve vidi (km/h, %, km).
     private let rideModeStatsHorizontalPadding: CGFloat = 10
-
     var body: some View {
         VStack(spacing: 0) {
             Spacer(minLength: 0)
@@ -235,7 +204,6 @@ struct PorcheIslandView: View {
                 } else if isExpanded, isRideMapActive, appState.showMapControlsInIsland {
                     mapControlsInIslandContent
                 } else if isExpanded, isRideMapActive {
-                    // 4 jednake ćelije: km/h, prijenos, baterija %, domet
                     HStack(spacing: rideModeStatsRowSpacing) {
                         rideModeStatCell("\(navSpeed)", unit: "km/h", fontSize: 22)
                         rideModeStatCell(gearRatioText, unit: "", fontSize: 22)
@@ -249,24 +217,41 @@ struct PorcheIslandView: View {
                     .padding(.bottom, 6)
                     if isExpanded {
                         expandedContent
-                            .transition(.asymmetric(
-                                insertion: .move(edge: .bottom).combined(with: .opacity),
-                                removal: .move(edge: .bottom).combined(with: .opacity)
-                            ))
+                            .transition(expandedContentTransition)
                     }
                     if !showNavigationInstructionsInIsland {
-                        Button { showModPicker = true } label: {
-                            Text(appState.assistMode.displayTitle)
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundStyle(.white)
-                                .lineLimit(1)
-                                .minimumScaleFactor(0.7)
-                                .frame(maxWidth: .infinity)
-                                .frame(height: rideModeButtonsRowHeight)
-                                .background(islandColors.accentGreen, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-                                .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                        HStack(spacing: 12) {
+                            Button { showModPicker = true } label: {
+                                Text(appState.assistMode.displayTitle)
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundStyle(.white)
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.7)
+                                    .frame(maxWidth: .infinity)
+                                    .frame(height: rideModeButtonsRowHeight)
+                                    .background(islandColors.accentGreen, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                                    .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                            }
+                            .buttonStyle(.plain)
+                            Button {
+                                onExitRide?()
+                                withAnimation(islandSpring) {
+                                    resetExpandedState()
+                                    island.state = .compact
+                                }
+                            } label: {
+                                Text("Kraj putovanja")
+                                    .font(.system(size: 15, weight: .semibold))
+                                    .foregroundStyle(.white)
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.8)
+                                    .frame(maxWidth: .infinity)
+                                    .frame(height: rideModeButtonsRowHeight)
+                                    .background(Color.red, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                                    .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                            }
+                            .buttonStyle(.plain)
                         }
-                        .buttonStyle(.plain)
                         .padding(.horizontal, islandInnerPadding)
                         .padding(.top, 8)
                         .padding(.bottom, 6)
@@ -276,10 +261,7 @@ struct PorcheIslandView: View {
                         .padding(.bottom, islandInnerPadding)
                 } else if isExpanded {
                     expandedContent
-                        .transition(.asymmetric(
-                            insertion: .move(edge: .bottom).combined(with: .opacity),
-                            removal: .move(edge: .bottom).combined(with: .opacity)
-                        ))
+                        .transition(expandedContentTransition)
                     Spacer(minLength: 0)
                 }
                 if !isExpanded || !isRideMapActive {
@@ -309,26 +291,48 @@ struct PorcheIslandView: View {
                     if island.state != .compact { showButtonsContent = true }
                 }
             } else {
-                showButtonsContent = false
-                selectedButton = nil
-                showModPicker = false
-                appState.showMapControlsInIsland = false
-                showNavigationInstructionsInIsland = false
+                resetExpandedState()
             }
         }
         .onChange(of: island.requestClose) { _, requested in
             guard requested else { return }
             withAnimation(islandSpring) {
-                showButtonsContent = false
-                selectedButton = nil
-                showModPicker = false
-                appState.showMapControlsInIsland = false
+                resetExpandedState()
                 island.state = .compact
             }
             DispatchQueue.main.async { island.requestClose = false }
         }
+        .onChange(of: appState.activeRoute) { _, newRoute in
+            if let route = newRoute, !route.steps.isEmpty {
+                navInstructions = route.steps.map { step in
+                    NavInstructionItem(
+                        kind: kindFromInstructionText(step.instructionText),
+                        distanceMeters: step.distanceMeters,
+                        instructionText: step.instructionText
+                    )
+                }
+                navInstructionIndex = 0
+            } else {
+                navInstructions = []
+                navInstructionIndex = 0
+            }
+        }
     }
-
+    private func kindFromInstructionText(_ text: String) -> NavInstructionKind {
+        let t = text.lowercased()
+        if t.contains("turn left") || t.contains("skreni lijevo") || t.contains("lijevo") || t.contains("left") { return .turnLeft }
+        if t.contains("turn right") || t.contains("skreni desno") || t.contains("desno") || t.contains("right") { return .turnRight }
+        if t.contains("turn around") || t.contains("u-turn") || t.contains("obrni") || t.contains("nazad") { return .turnBack }
+        if t.contains("continue") || t.contains("head ") || t.contains("keep ") || t.contains("ravno") || t.contains("straight") || t.contains("nastavi") { return .forward }
+        return .compass
+    }
+    private func resetExpandedState() {
+        showButtonsContent = false
+        selectedButton = nil
+        showModPicker = false
+        appState.showMapControlsInIsland = false
+        showNavigationInstructionsInIsland = false
+    }
     private var islandWidth: CGFloat {
         switch island.state {
         case .compact: return UIScreen.main.bounds.width - horizontalPadding * 2
@@ -336,10 +340,7 @@ struct PorcheIslandView: View {
         case .fullStats: return UIScreen.main.bounds.width - horizontalPadding * 2
         }
     }
-
-    /// Kad je fokus u polazištu/odredištu, island se poveća radi izbornika i autocompletea.
     private var isTypingLocation: Bool { selectedButton == .route && focusedDestinationField != nil }
-
     private var expandedMaxHeight: CGFloat? {
         switch island.state {
         case .compact: return collapsedHeight
@@ -351,13 +352,9 @@ struct PorcheIslandView: View {
         case .fullStats: return UIScreen.main.bounds.height * 0.85
         }
     }
-
-    /// Visina islanda kad je otvoren panel Statistika / Katalog / Postavke (cijeli prikaz).
     private var expandedHeightForStatistics: CGFloat {
         UIScreen.main.bounds.height * 0.9 - 24
     }
-
-    /// Fiksna visina u vožnji da sav sadržaj stane unutar crnog područja (brzina, panel, gumbi, donji red).
     private var expandedHeightForRideMode: CGFloat {
         let top = islandInnerPadding + rideModeSpeedRowHeight + 6
         let panel: CGFloat = 200
@@ -365,8 +362,6 @@ struct PorcheIslandView: View {
         let bottomBar = rideModeBottomBarHeight + islandInnerPadding
         return top + panel + buttons + bottomBar
     }
-
-    /// Visina islanda kad je otvoren prozor za izbor modova (lista 8 modova + bijela strelica).
     private var expandedHeightForModePicker: CGFloat {
         let topPadding: CGFloat = islandInnerPadding
         let rowHeight: CGFloat = 44
@@ -374,8 +369,6 @@ struct PorcheIslandView: View {
         let chevronArea: CGFloat = rideModeChevronRoundSize + islandInnerPadding * 2
         return topPadding + min(listHeight, 320) + chevronArea
     }
-
-    /// Visina islanda kad su otvorene kontrole mape (3 stupca + okrugli povratak).
     private var expandedHeightForMapControls: CGFloat {
         let top: CGFloat = islandInnerPadding
         let sideBtnSize: CGFloat = 52
@@ -384,8 +377,6 @@ struct PorcheIslandView: View {
         let chevronArea: CGFloat = rideModeChevronRoundSize + islandInnerPadding * 2
         return top + contentH + 14 + chevronArea
     }
-
-    /// Korištena visina za frame – sve unutar crnog područja bez overflowa.
     private var islandFrameHeight: CGFloat {
         switch island.state {
         case .compact: return collapsedHeight
@@ -399,8 +390,6 @@ struct PorcheIslandView: View {
         case .fullStats: return UIScreen.main.bounds.height * 0.85
         }
     }
-
-    /// Compact: "Porche" ili (tijekom navigacije) brzina + stupanj. Prošireno: red ikona ili navigacijski red.
     private var pillBar: some View {
         Group {
             if isExpanded {
@@ -408,152 +397,310 @@ struct PorcheIslandView: View {
                     islandIconRow
                 }
             } else {
-                Button {
-                    withAnimation(islandSpring) { island.state = .actions }
-                } label: {
-                    if isRideMapActive {
-                        HStack(spacing: rideModeStatsRowSpacing) {
-                            rideModeCompactCell(value: "\(navSpeed)", label: "km/h")
-                            rideModeCompactCell(value: gearRatioText, label: "Prijenos")
-                            rideModeCompactCell(value: "\(batteryPercent)", label: "Baterija")
-                            rideModeCompactCell(value: String(format: "%.0f", batteryRangeKm), label: "Domet")
-                        }
-                        .frame(maxWidth: .infinity)
-                        .frame(height: collapsedHeight)
-                        .padding(.horizontal, rideModeStatsHorizontalPadding)
-                    } else {
-                        Text(island.title)
+                ZStack {
+                    swipeablePillContent
+                    if !isRideMapActive && pillPageIndex == 0 {
+                        Text(Island.defaultTitle)
                             .font(AppTypography.headline)
                             .foregroundStyle(islandColors.titleGradient)
                             .frame(maxWidth: .infinity)
                             .frame(height: collapsedHeight)
+                            .allowsHitTesting(false)
                     }
                 }
-                .buttonStyle(.plain)
-                .padding(.horizontal, 20)
             }
         }
         .padding(.vertical, isExpanded ? 14 : 0)
         .padding(.horizontal, isExpanded ? iconRowGap : 20)
     }
-
-    /// Veličina kružnih gumba u donjem redu (Moon, Paths, Island, Mapa).
+    private let minPillContentWidth: CGFloat = 280
+    private var swipeablePillContent: some View {
+        GeometryReader { geo in
+            let w = max(geo.size.width, minPillContentWidth)
+            HStack(spacing: 0) {
+                ForEach(0..<pillPageCount, id: \.self) { index in
+                    pillPageView(index: index)
+                        .frame(width: w, height: collapsedHeight)
+                        .clipped()
+                        .id(index)
+                }
+            }
+            .frame(width: CGFloat(pillPageCount) * w, height: collapsedHeight, alignment: .leading)
+            .offset(x: -CGFloat(pillPageIndex) * w + pillDragOffset)
+            .animation(.interactiveSpring(response: 0.3, dampingFraction: 0.85), value: pillPageIndex)
+            .frame(width: w, height: collapsedHeight)
+            .clipped()
+            .contentShape(Rectangle())
+            .onTapGesture {
+                withAnimation(islandSpring) { island.state = .actions }
+            }
+        }
+        .frame(height: collapsedHeight)
+        .padding(.horizontal, 20)
+        .onChange(of: isRideMapActive) { _, _ in pillPageIndex = pillDefaultPageIndex; pillDragOffset = 0 }
+        .onChange(of: hasActiveRoute) { _, _ in pillPageIndex = pillDefaultPageIndex }
+        .onChange(of: island.state) { _, newState in
+            if newState == .compact { pillPageIndex = pillDefaultPageIndex; pillDragOffset = 0 }
+        }
+        .onAppear { pillPageIndex = pillDefaultPageIndex; pillDragOffset = 0 }
+    }
+    @ViewBuilder
+    private func pillPageView(index: Int) -> some View {
+        if !isRideMapActive {
+            pillDefaultPorche
+        } else if hasActiveRoute {
+            switch index {
+            case 0: pillRideStatsView
+            case 1: pillNavCountdownView
+            case 2: pillDistanceAtoBView
+            default: pillRideStatsView
+            }
+        } else {
+            pillRideStatsView
+        }
+    }
+    private var pillDefaultPorche: some View {
+        Text(Island.defaultTitle)
+            .font(AppTypography.headline)
+            .foregroundStyle(islandColors.titleGradient)
+            .frame(maxWidth: .infinity)
+            .frame(height: collapsedHeight)
+    }
+    private var pillTemperaturesView: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "thermometer.medium")
+                .font(.system(size: 24))
+                .foregroundStyle(islandColors.secondary)
+            VStack(alignment: .leading, spacing: 4) {
+                labelValueRow("Motor", value: appState.motorTempCelsius.map { "\($0) °C" } ?? "—")
+                labelValueRow("Baterija", value: appState.batteryTempCelsius.map { "\($0) °C" } ?? "—")
+                labelValueRow("Kočnice", value: appState.brakeTempCelsius.map { "\($0) °C" } ?? "—")
+            }
+            .font(.system(size: 13, weight: .medium))
+            .foregroundStyle(islandColors.title)
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: collapsedHeight)
+        .padding(.horizontal, 16)
+    }
+    private func labelValueRow(_ label: String, value: String) -> some View {
+        HStack {
+            Text(label)
+                .foregroundStyle(islandColors.secondary)
+            Spacer(minLength: 8)
+            Text(value)
+        }
+    }
+    private var pillChargingView: some View {
+        VStack(spacing: 8) {
+            HStack(spacing: 10) {
+                Image(systemName: "battery.100percent")
+                    .font(.system(size: 24))
+                    .foregroundStyle(islandColors.title)
+                if appState.isCharging {
+                    Image(systemName: "bolt.fill")
+                        .font(.system(size: 20))
+                        .foregroundStyle(.yellow)
+                }
+                Text(appState.isCharging ? "Punjenje" : "Baterija")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(islandColors.title)
+            }
+            Text("\(batteryPercent) %")
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(islandColors.title)
+            if appState.isCharging {
+                let min = appState.minutesToFullCharge ?? 0
+                Text(min > 0 ? "Do 100%: \(min) min" : "Do 100%: — min")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(islandColors.secondary)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: collapsedHeight)
+    }
+    private var pillRideStatsView: some View {
+        HStack(spacing: rideModeStatsRowSpacing) {
+            rideModeCompactCell(value: "\(navSpeed)", label: "km/h")
+            rideModeCompactCell(value: gearRatioText, label: "Prijenos")
+            rideModeCompactCell(value: "\(batteryPercent)", label: "Baterija")
+            rideModeCompactCell(value: String(format: "%.0f", batteryRangeKm), label: "Domet")
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: collapsedHeight)
+        .padding(.horizontal, rideModeStatsHorizontalPadding)
+    }
+    private var pillNavCountdownView: some View {
+        let (meters, instruction) = navCountdownToNextTurn
+        return VStack(spacing: 6) {
+            if let instr = instruction {
+                Image(systemName: navTurnIcon(instr))
+                    .font(.system(size: 28))
+                    .foregroundStyle(islandColors.title)
+            }
+            Text(meters >= 0 ? "Za \(Int(meters)) m" : "—")
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundStyle(islandColors.title)
+            Text("Do sljedeće upute")
+                .font(.system(size: 11, weight: .medium))
+                .foregroundStyle(islandColors.secondary)
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: collapsedHeight)
+    }
+    private var navCountdownToNextTurn: (meters: Double, instruction: String?) {
+        guard let route = appState.activeRoute, !route.steps.isEmpty else { return (-1, nil) }
+        let progress = appState.routeProgressAlongLine
+        let totalLen = route.steps.reduce(0.0) { $0 + Double($1.distanceMeters) }
+        let currentLen = progress * totalLen
+        var acc: Double = 0
+        for (i, step) in route.steps.enumerated() {
+            let stepEnd = acc + Double(step.distanceMeters)
+            if stepEnd > currentLen {
+                let toNext = stepEnd - currentLen
+                return (toNext, step.instructionText)
+            }
+            acc = stepEnd
+        }
+        return (0, route.steps.last?.instructionText)
+    }
+    private func navTurnIcon(_ text: String) -> String {
+        let t = text.lowercased()
+        if t.contains("lijevo") || t.contains("left") { return "arrow.turn.up.left" }
+        if t.contains("desno") || t.contains("right") { return "arrow.turn.up.right" }
+        if t.contains("ravno") || t.contains("straight") { return "arrow.up" }
+        return "location.north.fill"
+    }
+    private var pillDistanceAtoBView: some View {
+        let (total, remaining) = routeDistanceAtoB
+        return VStack(spacing: 6) {
+            Image(systemName: "point.topleft.down.curvedto.point.bottomright.up")
+                .font(.system(size: 24))
+                .foregroundStyle(islandColors.title)
+            HStack(spacing: 16) {
+                VStack(spacing: 2) {
+                    Text("\(Int(remaining / 1000)) km")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundStyle(islandColors.title)
+                    Text("Preostalo")
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundStyle(islandColors.secondary)
+                }
+                VStack(spacing: 2) {
+                    Text("\(Int(total / 1000)) km")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundStyle(islandColors.secondary)
+                    Text("Ukupno")
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundStyle(islandColors.secondary)
+                }
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: collapsedHeight)
+    }
+    private var routeDistanceAtoB: (totalM: Double, remainingM: Double) {
+        guard let route = appState.activeRoute, !route.steps.isEmpty else { return (0, 0) }
+        let total = route.steps.reduce(0.0) { $0 + Double($1.distanceMeters) }
+        let progress = appState.routeProgressAlongLine
+        let remaining = (1 - progress) * total
+        return (total, remaining)
+    }
+    private var pillHeartView: some View {
+        let bpm = appState.heartRateBPM ?? 0
+        return VStack(spacing: 8) {
+            Image(systemName: "heart.fill")
+                .font(.system(size: 32))
+                .foregroundStyle(.red)
+            Text(bpm > 0 ? "\(bpm) BPM" : "—")
+                .font(.system(size: 20, weight: .semibold))
+                .foregroundStyle(islandColors.title)
+            Text("Otkucaj srca")
+                .font(.system(size: 11, weight: .medium))
+                .foregroundStyle(islandColors.secondary)
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: collapsedHeight)
+    }
     private let rideModeCircleButtonSize: CGFloat = 44
-    /// Bijeli okrugli gumb „povratak” (strelica) – ista širina i visina za krug.
     private let rideModeChevronRoundSize: CGFloat = 52
-    /// Jednak razmak između svih gumba u donjem redu i od rubova (Moon, Paths, chevron, Island, Mapa).
     private let rideModeBarSpacing: CGFloat = 16
-
-    /// Donji red u vožnji. Kad su upute aktivne: lijevo povećaj, sredina bijeli „natrag”, desno ulica/lokacija/smjer.
+    private let navPrevNextButtonSize: CGFloat = 44
     private var rideModeBottomBar: some View {
         HStack(alignment: .bottom, spacing: 0) {
             if showNavigationInstructionsInIsland {
-                Button {
-                    navExpandFullscreen.toggle()
-                } label: {
-                    Image(systemName: "arrow.up.left.and.arrow.down.right")
-                        .font(.system(size: 18))
-                        .foregroundStyle(islandColors.title)
-                        .frame(width: rideModeCircleButtonSize, height: rideModeCircleButtonSize)
-                        .background(islandColors.buttonBg, in: Circle())
-                }
-                .buttonStyle(.plain)
-                Spacer(minLength: 0)
-                Button {
-                    withAnimation(islandSpring) { showNavigationInstructionsInIsland = false }
-                } label: {
-                    ZStack {
-                        Circle()
-                            .fill(Color.white)
-                            .frame(width: rideModeChevronRoundSize, height: rideModeChevronRoundSize)
-                        Image(systemName: "chevron.down")
-                            .font(.system(size: 22, weight: .medium))
-                            .foregroundStyle(.black)
-                            .rotationEffect(.degrees(90))
+                IslandCircleIconButton(size: navPrevNextButtonSize, backgroundColor: islandColors.buttonBg, foregroundColor: .white) {
+                    Image(systemName: "chevron.up")
+                        .font(.system(size: 18, weight: .semibold))
+                } action: {
+                    withAnimation(islandSpring) {
+                        navInstructionIndex = max(0, navInstructionIndex - 1)
                     }
-                    .frame(width: rideModeChevronRoundSize, height: rideModeChevronRoundSize)
-                    .contentShape(Circle())
                 }
-                .buttonStyle(ChevronCapsuleButtonStyle())
+                .disabled(navInstructions.isEmpty || navInstructionIndex <= 0)
+                .opacity((navInstructions.isEmpty || navInstructionIndex <= 0) ? 0.5 : 1)
                 Spacer(minLength: 0)
-                AppIcons.imageCompass
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 24, height: 24)
-                    .foregroundStyle(islandColors.title)
-                    .rotationEffect(.degrees(-navHeadingDegrees))
-                    .padding(.bottom, 4)
+                IslandChevronCloseButton(size: rideModeChevronRoundSize) {
+                    withAnimation(islandSpring) { showNavigationInstructionsInIsland = false }
+                }
+                Spacer(minLength: 0)
+                IslandCircleIconButton(size: navPrevNextButtonSize, backgroundColor: islandColors.buttonBg, foregroundColor: .white) {
+                    Image(systemName: "chevron.down")
+                        .font(.system(size: 18, weight: .semibold))
+                } action: {
+                    withAnimation(islandSpring) {
+                        navInstructionIndex = min(navInstructions.count - 1, navInstructionIndex + 1)
+                    }
+                }
+                .disabled(navInstructions.isEmpty || navInstructionIndex >= navInstructions.count - 1)
+                .opacity((navInstructions.isEmpty || navInstructionIndex >= navInstructions.count - 1) ? 0.5 : 1)
             } else {
                 HStack(spacing: rideModeBarSpacing) {
-                    Button {
-                        appState.isNightRidingMode.toggle()
-                    } label: {
+                    IslandCircleIconButton(
+                        size: rideModeCircleButtonSize,
+                        backgroundColor: appState.isNightRidingMode ? AppColors.nightRidingOrange : islandColors.buttonBg,
+                        foregroundColor: islandColors.title
+                    ) {
                         AppIcons.imageMoon
                             .resizable()
                             .scaledToFit()
                             .frame(width: 22, height: 22)
-                            .foregroundStyle(islandColors.title)
-                            .frame(width: rideModeCircleButtonSize, height: rideModeCircleButtonSize)
-                            .background(appState.isNightRidingMode ? AppColors.nightRidingOrange : islandColors.buttonBg, in: Circle())
+                    } action: {
+                        appState.isNightRidingMode.toggle()
                     }
-                    .buttonStyle(.plain)
-                    Button {
-                        withAnimation(islandSpring) { showNavigationInstructionsInIsland = true }
-                    } label: {
+                    IslandCircleIconButton(size: rideModeCircleButtonSize, backgroundColor: islandColors.buttonBg, foregroundColor: islandColors.title) {
                         AppIcons.imagePaths
                             .resizable()
                             .scaledToFit()
                             .frame(width: 20, height: 20)
-                            .foregroundStyle(islandColors.title)
-                            .frame(width: rideModeCircleButtonSize, height: rideModeCircleButtonSize)
-                            .background(islandColors.buttonBg, in: Circle())
+                    } action: {
+                        withAnimation(islandSpring) { showNavigationInstructionsInIsland = true }
                     }
-                    .buttonStyle(.plain)
-                    Button {
+                    IslandChevronCloseButton(size: rideModeChevronRoundSize) {
                         withAnimation(islandSpring) {
                             selectedButton = nil
                             island.state = .compact
                             showNavigationInstructionsInIsland = false
                         }
-                    } label: {
-                        Image(systemName: "chevron.down")
-                            .font(.system(size: 22, weight: .medium))
-                            .foregroundStyle(.black)
-                            .frame(width: rideModeChevronRoundSize, height: rideModeChevronRoundSize)
-                            .background(Color.white, in: Circle())
-                            .contentShape(Circle())
                     }
-                    .buttonStyle(.plain)
-                    Button {
-                        onExitRide?()
-                        withAnimation(islandSpring) {
-                            appState.showMapControlsInIsland = false
-                            island.state = .compact
-                            showModPicker = false
-                            showNavigationInstructionsInIsland = false
-                            selectedButton = nil
-                        }
-                    } label: {
+                    IslandCircleIconButton(size: rideModeCircleButtonSize, backgroundColor: islandColors.buttonBg, foregroundColor: islandColors.title) {
                         AppIcons.imageIsland
                             .resizable()
                             .scaledToFit()
                             .frame(width: 22, height: 22)
-                            .foregroundStyle(islandColors.title)
-                            .frame(width: rideModeCircleButtonSize, height: rideModeCircleButtonSize)
-                            .background(islandColors.buttonBg, in: Circle())
-                            .contentShape(Circle())
+                    } action: {
+                        withAnimation(islandSpring) {
+                            resetExpandedState()
+                            island.state = .compact
+                        }
                     }
-                    .buttonStyle(.plain)
-                    Button {
-                        withAnimation(islandSpring) { appState.showMapControlsInIsland.toggle() }
-                    } label: {
+                    IslandCircleIconButton(size: rideModeCircleButtonSize, backgroundColor: islandColors.buttonBg, foregroundColor: islandColors.title) {
                         Image(systemName: "map.fill")
                             .font(.system(size: 18))
-                            .foregroundStyle(islandColors.title)
-                            .frame(width: rideModeCircleButtonSize, height: rideModeCircleButtonSize)
-                            .background(islandColors.buttonBg, in: Circle())
+                    } action: {
+                        withAnimation(islandSpring) { appState.showMapControlsInIsland.toggle() }
                     }
-                    .buttonStyle(.plain)
                 }
                 .padding(.horizontal, rideModeBarSpacing)
                 .frame(maxWidth: .infinity)
@@ -561,8 +708,6 @@ struct PorcheIslandView: View {
         }
         .frame(height: rideModeBottomBarHeight)
     }
-
-    /// Dvije nijanse po modu za ukosi gradijent unutar slova (topLeading → bottomTrailing).
     private static let modePickerColors: (
         off: (Color, Color), eco: (Color, Color), tour: (Color, Color), sport: (Color, Color),
         turbo: (Color, Color), custom: (Color, Color), auto: (Color, Color), walk: (Color, Color)
@@ -577,8 +722,6 @@ struct PorcheIslandView: View {
         walk: (Color.white.opacity(0.95), Color.white.opacity(0.7))
     )
     private static let modePickerGradientDiagonal = (start: UnitPoint.topLeading, end: UnitPoint.bottomTrailing)
-
-    /// Prozor za izbor modova unutar islanda: lista 8 modova (slova obojana) + bijeli gumb na istom mjestu, strelica rotirana u suprotnu stranu.
     private var modePickerInIslandContent: some View {
         VStack(spacing: 0) {
             ScrollView(.vertical, showsIndicators: false) {
@@ -605,29 +748,14 @@ struct PorcheIslandView: View {
             }
             .frame(maxHeight: 320)
             .padding(.top, islandInnerPadding)
-
             Spacer(minLength: 8)
-            Button {
+            IslandChevronCloseButton(size: rideModeChevronRoundSize) {
                 withAnimation(islandSpring) { showModPicker = false }
-            } label: {
-                ZStack {
-                    Circle()
-                        .fill(Color.white)
-                        .frame(width: rideModeChevronRoundSize, height: rideModeChevronRoundSize)
-                    Image(systemName: "chevron.down")
-                        .font(.system(size: 22, weight: .medium))
-                        .foregroundStyle(.black)
-                        .rotationEffect(.degrees(90))
-                }
-                .frame(width: rideModeChevronRoundSize, height: rideModeChevronRoundSize)
-                .contentShape(Circle())
             }
-            .buttonStyle(ChevronCapsuleButtonStyle())
             .padding(.bottom, islandInnerPadding)
         }
         .padding(.horizontal, islandInnerPadding)
     }
-
     private func modePickerLabel(for mode: AssistMode) -> some View {
         let (c1, c2) = Self.modePickerGradientColors(for: mode)
         let g = Self.modePickerGradientDiagonal
@@ -635,7 +763,6 @@ struct PorcheIslandView: View {
             .font(.subheadline.weight(.medium))
             .foregroundStyle(LinearGradient(colors: [c1, c2], startPoint: g.start, endPoint: g.end))
     }
-
     private static func modePickerGradientColors(for mode: AssistMode) -> (Color, Color) {
         let c = modePickerColors
         switch mode {
@@ -649,8 +776,6 @@ struct PorcheIslandView: View {
         case .walk: return c.walk
         }
     }
-
-    /// Kontrole mape: lijevo topologija, sredina strelice + centriraj, desno light/dark, 2D/3D, ruka. Lijevi/desni gumbi veći, od vrha do dna.
     private var mapControlsInIslandContent: some View {
         let sideBtnSize: CGFloat = 52
         let sideGap: CGFloat = 12
@@ -660,28 +785,48 @@ struct PorcheIslandView: View {
         let colGap: CGFloat = 18
         return VStack(spacing: 0) {
             HStack(alignment: .center, spacing: colGap) {
-                // Lijevi stupac: 3 veća gumba topologije – od vrha do dna
                 VStack(spacing: sideGap) {
-                    ForEach([MapTerrainStyle.standard, .satellite, .hybrid], id: \.rawValue) { style in
-                        Button {
-                            appState.mapStyle = style
-                        } label: {
-                            Image(systemName: mapStyleIcon(style))
-                                .font(.system(size: 20))
-                                .foregroundStyle(appState.mapStyle == style ? islandColors.accentGreen : islandColors.title)
-                                .frame(width: sideBtnSize, height: sideBtnSize)
-                                .background(appState.mapStyle == style ? islandColors.accentGreen.opacity(0.25) : islandColors.buttonBg, in: Circle())
-                        }
-                        .buttonStyle(.plain)
+                    Button {
+                        appState.mapStyle = mapStyleNext(appState.mapStyle)
+                    } label: {
+                        Image(systemName: mapStyleIcon(appState.mapStyle))
+                            .font(.system(size: 20))
+                            .foregroundStyle(islandColors.accentGreen)
+                            .frame(width: sideBtnSize, height: sideBtnSize)
+                            .background(islandColors.accentGreen.opacity(0.25), in: Circle())
                     }
+                    .buttonStyle(.plain)
+                    Button {
+                        appState.mapCameraDistance = max(200, appState.mapCameraDistance - 80)
+                    } label: {
+                        Image(systemName: "plus.magnifyingglass")
+                            .font(.system(size: 20))
+                            .foregroundStyle(islandColors.title)
+                            .frame(width: sideBtnSize, height: sideBtnSize)
+                            .background(islandColors.buttonBg, in: Circle())
+                    }
+                    .buttonStyle(.plain)
+                    Button {
+                        appState.mapCameraDistance = min(2000, appState.mapCameraDistance + 80)
+                    } label: {
+                        Image(systemName: "minus.magnifyingglass")
+                            .font(.system(size: 20))
+                            .foregroundStyle(islandColors.title)
+                            .frame(width: sideBtnSize, height: sideBtnSize)
+                            .background(islandColors.buttonBg, in: Circle())
+                    }
+                    .buttonStyle(.plain)
                 }
                 .frame(height: contentHeight)
                 .frame(maxWidth: .infinity)
-
-                // Sredina: strelice u + s centriraj u sredini
                 VStack(spacing: 6) {
                     Button {
-                        appState.mapCameraDistance = min(2000, appState.mapCameraDistance + 80)
+                        let hasRoute = appState.activeRoute.map { !$0.waypoints.isEmpty } ?? false
+                        if hasRoute {
+                            appState.routeProgressAlongLine = min(1, appState.routeProgressAlongLine + 0.06)
+                        } else {
+                            appState.mapCameraDistance = min(2000, appState.mapCameraDistance + 80)
+                        }
                     } label: {
                         Image(systemName: "arrow.up")
                             .font(.system(size: 13, weight: .semibold))
@@ -725,7 +870,12 @@ struct PorcheIslandView: View {
                         .buttonStyle(.plain)
                     }
                     Button {
-                        appState.mapCameraDistance = max(200, appState.mapCameraDistance - 80)
+                        let hasRoute = appState.activeRoute.map { !$0.waypoints.isEmpty } ?? false
+                        if hasRoute {
+                            appState.routeProgressAlongLine = max(0, appState.routeProgressAlongLine - 0.06)
+                        } else {
+                            appState.mapCameraDistance = max(200, appState.mapCameraDistance - 80)
+                        }
                     } label: {
                         Image(systemName: "arrow.down")
                             .font(.system(size: 13, weight: .semibold))
@@ -737,8 +887,6 @@ struct PorcheIslandView: View {
                 }
                 .frame(height: contentHeight)
                 .frame(maxWidth: .infinity)
-
-                // Desni stupac: light/dark, 2D/3D, ruka (pomicanje) – veći gumbi od vrha do dna
                 VStack(spacing: sideGap) {
                     Button {
                         appState.mapDarkStyle.toggle()
@@ -776,28 +924,13 @@ struct PorcheIslandView: View {
             }
             .padding(.horizontal, islandInnerPadding)
             .padding(.top, islandInnerPadding)
-
             Spacer(minLength: 10)
-            Button {
+            IslandChevronCloseButton(size: rideModeChevronRoundSize) {
                 withAnimation(islandSpring) { appState.showMapControlsInIsland = false }
-            } label: {
-                ZStack {
-                    Circle()
-                        .fill(Color.white)
-                        .frame(width: rideModeChevronRoundSize, height: rideModeChevronRoundSize)
-                    Image(systemName: "chevron.down")
-                        .font(.system(size: 22, weight: .medium))
-                        .foregroundStyle(.black)
-                        .rotationEffect(.degrees(90))
-                }
-                .frame(width: rideModeChevronRoundSize, height: rideModeChevronRoundSize)
-                .contentShape(Circle())
             }
-            .buttonStyle(ChevronCapsuleButtonStyle())
             .padding(.bottom, islandInnerPadding)
         }
     }
-
     private func mapStyleLabel(_ style: MapTerrainStyle) -> String {
         switch style {
         case .standard: return "Standard"
@@ -806,7 +939,13 @@ struct PorcheIslandView: View {
         case .flyover: return "3D"
         }
     }
-
+    private func mapStyleNext(_ style: MapTerrainStyle) -> MapTerrainStyle {
+        switch style {
+        case .standard: return .satellite
+        case .satellite: return .hybrid
+        case .hybrid, .flyover: return .standard
+        }
+    }
     private func mapStyleIcon(_ style: MapTerrainStyle) -> String {
         switch style {
         case .standard: return "map"
@@ -815,8 +954,6 @@ struct PorcheIslandView: View {
         case .flyover: return "map"
         }
     }
-
-    /// Brzina, prijenos, baterija, domet – iste dimenzije; strelica desno.
     private var navigationPillRow: some View {
         HStack(spacing: rideModeStatsRowSpacing) {
             rideModeStatCell("\(navSpeed)", unit: "km/h", fontSize: 22)
@@ -841,8 +978,6 @@ struct PorcheIslandView: View {
         .padding(.horizontal, iconRowGap)
         .frame(maxWidth: .infinity)
     }
-
-    // MARK: - Navigacijski panel: Odaziv | Moment | Podrška – jednako od ruba do ruba, veći elementi
     private var navigationPanel: some View {
         HStack(alignment: .top, spacing: 0) {
             NavigationControlColumn(
@@ -851,14 +986,12 @@ struct PorcheIslandView: View {
                 step: 0.1
             ) { appState.dynamicResponse = min(1, max(0, appState.dynamicResponse + $0)) }
             .frame(maxWidth: .infinity)
-
             NavigationControlColumn(
                 label: "Okretni moment",
                 valueLabel: "\(Int(appState.maxTorqueNm)) Nm",
                 step: 1
             ) { appState.maxTorqueNm = min(85, max(20, appState.maxTorqueNm + $0)) }
             .frame(maxWidth: .infinity)
-
             NavigationControlColumn(
                 label: "Podrška",
                 valueLabel: "\(Int(appState.supportLevel * 100))%",
@@ -870,8 +1003,6 @@ struct PorcheIslandView: View {
         .padding(.horizontal, islandInnerPadding)
         .padding(.vertical, 10)
     }
-
-    /// Jedan red: Route, Graph, strelica, Bike, Settings. Isti razmak između gumba i do rubova.
     private let iconRowGap: CGFloat = 12
     private var islandIconRow: some View {
         HStack(spacing: iconRowGap) {
@@ -898,7 +1029,6 @@ struct PorcheIslandView: View {
         .frame(maxWidth: .infinity)
         .opacity(showButtonsContent ? 1 : 0)
     }
-
     @ViewBuilder
     private var expandedContent: some View {
         Group {
@@ -926,120 +1056,63 @@ struct PorcheIslandView: View {
         .animation(islandSpringContent, value: isRideMapActive)
         .animation(islandSpringContent, value: showNavigationInstructionsInIsland)
     }
-
-    /// Dijagonala: od gornjeg kuta prema sredini; kartica mala pa raste. Odbrojavanje do 0 pa sljedeća.
-    private static let navFromTopLeadingTransition = AnyTransition.asymmetric(
-        insertion: .offset(x: -180, y: -90).combined(with: .scale(scale: 0.35)),
-        removal: .offset(x: 120, y: 0).combined(with: .scale(scale: 0.7)).combined(with: .opacity)
-    )
-
-    /// Panel navigacije: upute samo iz stvarne rute (nikad automatski/random). Kad nema uputa – prazan prikaz s porukom.
     private var navigationInstructionsPanel: some View {
-        let visibleThree = Array(navInstructions.prefix(3))
-        return ZStack(alignment: .topLeading) {
-            if visibleThree.isEmpty {
+        Group {
+            if navInstructions.isEmpty {
                 Text("Upute će se prikazati tijekom navigacije")
                     .font(.subheadline)
                     .foregroundStyle(islandColors.secondary)
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 20)
-            }
-            // Samo 2 sljedeće – UKOSO: najbliža gornjem lijevom rubu najmanja, druga na dijagonali malo veća
-            if visibleThree.count > 2 {
-                navInstructionSmallCard(visibleThree[2], size: .smallest)
-                    .offset(x: 8, y: 8)
-            }
-            if visibleThree.count > 1 {
-                navInstructionSmallCard(visibleThree[1], size: .medium)
-                    .offset(x: 50, y: 30)
-            }
-
-            // Sredina: trenutna (najveća), dolazi ukoso
-            if let current = visibleThree.first {
-                VStack(spacing: 8) {
-                    current.icon
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 56, height: 56)
-                        .foregroundStyle(islandColors.title)
-                        .rotationEffect(.degrees(current.kind.rotationDegrees))
-                    if navFailed {
-                        Text("Povratak: \(navReturnMeters >= 1000 ? String(format: "%.1f km", navReturnMeters / 1000) : "\(Int(navReturnMeters)) m")")
-                            .font(.caption.weight(.semibold))
+                    .padding(.vertical, 24)
+            } else if navInstructionIndex < navInstructions.count {
+                let item = navInstructions[navInstructionIndex]
+                VStack(spacing: 10) {
+                    HStack(alignment: .center, spacing: 14) {
+                        item.icon
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 44, height: 44)
                             .foregroundStyle(islandColors.accentGreen)
-                    } else {
-                        Text(distanceLabel(current.distanceMeters))
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(islandColors.title)
+                            .rotationEffect(.degrees(item.kind.rotationDegrees))
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(item.instructionText.isEmpty ? navKindDefaultLabel(item.kind) : item.instructionText)
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundStyle(islandColors.title)
+                                .lineLimit(2)
+                                .multilineTextAlignment(.leading)
+                            Text(distanceLabel(item.distanceMeters))
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundStyle(islandColors.secondary)
+                        }
+                        Spacer(minLength: 8)
                     }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 14)
+                    .background(islandColors.buttonBg.opacity(0.6), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    Text("\(navInstructionIndex + 1) / \(navInstructions.count)")
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(islandColors.secondary)
                 }
-                .frame(minWidth: 88)
-                .padding(.vertical, 14)
-                .padding(.horizontal, 18)
-                .background(islandColors.buttonBg.opacity(0.7), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-                .transition(Self.navFromTopLeadingTransition)
-                .id(current.id)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .frame(maxWidth: .infinity)
             }
         }
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 12)
-        .padding(.vertical, 16)
-        .animation(islandSpringContent, value: Array(navInstructions.prefix(3)).map(\.id))
-        .onAppear {
-            if navInstructions.count > 3 {
-                navInstructions = Array(navInstructions.prefix(3))
-            }
-        }
-        .onReceive(Timer.publish(every: 1.0, on: .main, in: .common).autoconnect()) { _ in
-            guard !navFailed, !navInstructions.isEmpty else { return }
-            let first = navInstructions[0]
-            let currentD = first.distanceMeters
-            // Tek kad je došlo do 0 – prebaci na sljedeći znak. Do tad samo odbrojavaj.
-            if currentD <= 0 {
-                withAnimation(islandSpringContent) {
-                    navInstructions = Array(navInstructions.dropFirst())
-                }
-                return
-            }
-            let step: Double = 30
-            var nextD = currentD - step
-            if nextD < 0 { nextD = 0 }
-            // Isti znak, ista id – samo se smanjuje broj do 0
-            withAnimation(.easeOut(duration: 0.25)) {
-                navInstructions = [NavInstructionItem(id: first.id, kind: first.kind, distanceMeters: nextD)] + Array(navInstructions.dropFirst())
-            }
+        .padding(.vertical, 12)
+    }
+    private func navKindDefaultLabel(_ kind: NavInstructionKind) -> String {
+        switch kind {
+        case .turnLeft: return "Skreni lijevo"
+        case .turnRight: return "Skreni desno"
+        case .forward: return "Ravno"
+        case .turnBack: return "Polukružno se okreni"
+        case .compass: return "Slijedi rutu"
         }
     }
-
-    private enum NavCardSize {
-        case smallest, medium
-        var iconSize: CGFloat { self == .smallest ? 18 : 24 }
-        var frameWidth: CGFloat { self == .smallest ? 36 : 44 }
-    }
-
-    private func navInstructionSmallCard(_ item: NavInstructionItem, size: NavCardSize) -> some View {
-        VStack(spacing: 2) {
-            item.icon
-                .resizable()
-                .scaledToFit()
-                .frame(width: size.iconSize, height: size.iconSize)
-                .foregroundStyle(islandColors.secondary)
-                .rotationEffect(.degrees(item.kind.rotationDegrees))
-            Text(distanceLabel(item.distanceMeters))
-                .font(.system(size: size == .smallest ? 9 : 10, weight: .medium))
-                .foregroundStyle(islandColors.secondary)
-        }
-        .frame(width: size.frameWidth)
-        .padding(.vertical, 4)
-        .background(islandColors.buttonBg.opacity(0.4), in: RoundedRectangle(cornerRadius: 6, style: .continuous))
-    }
-
     private func distanceLabel(_ meters: Double) -> String {
         if meters >= 1000 { return String(format: "%.1f km", meters / 1000) }
         return "\(Int(meters)) m"
     }
-
     private var expandedContentHeight: CGFloat {
         switch island.state {
         case .compact: return 0
@@ -1052,7 +1125,6 @@ struct PorcheIslandView: View {
         case .fullStats: return (UIScreen.main.bounds.height * 0.85) - expandedPillSectionHeight - 24
         }
     }
-
     @ViewBuilder
     private func buttonContent(_ button: IslandSelectedButton) -> some View {
         switch button {
@@ -1066,7 +1138,6 @@ struct PorcheIslandView: View {
             settingsContent
         }
     }
-
     private var routeContent: some View {
         VStack(alignment: .center, spacing: 14) {
             if isMapVisible {
@@ -1084,7 +1155,9 @@ struct PorcheIslandView: View {
                 HStack(spacing: 6) {
                     if hasRouteDestinations {
                         AppIcons.imageStart
-                            .font(.system(size: 14))
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 16, height: 16)
                     }
                     Text(hasRouteDestinations ? "Pokreni navigaciju" : "Pokreni bez navigacije")
                         .font(.system(size: 14, weight: .semibold))
@@ -1092,16 +1165,16 @@ struct PorcheIslandView: View {
                 .foregroundStyle(.white)
                 .padding(.horizontal, 20)
                 .padding(.vertical, 12)
+                .frame(height: 44)
                 .background(Capsule().fill(islandColors.accentGreen))
             }
             .buttonStyle(.plain)
+            .fixedSize(horizontal: true, vertical: true)
             .accessibilityIdentifier("pokreniNavigacijuButton")
         }
         .padding(20)
         .frame(maxWidth: .infinity, alignment: .center)
     }
-
-    /// Redovi za polazište (A) i odredište (B) – TextField + autocomplete hrvatskih lokacija.
     private var destinationRows: some View {
         VStack(spacing: 0) {
             destinationRow(
@@ -1192,7 +1265,6 @@ struct PorcheIslandView: View {
             if focusedDestinationField == .destination { locationCompleter.queryFragment = routeDestination }
         }
     }
-
     private func applySuggestion(_ completion: MKLocalSearchCompletion) {
         let text = [completion.title, completion.subtitle].filter { !$0.isEmpty }.joined(separator: ", ")
         if focusedDestinationField == .origin {
@@ -1203,7 +1275,6 @@ struct PorcheIslandView: View {
         focusedDestinationField = nil
         locationCompleter.clear()
     }
-
     private func destinationRow(
         icon: String,
         iconColor: Color,
@@ -1241,7 +1312,6 @@ struct PorcheIslandView: View {
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
     }
-
     private var graphContent: some View {
         VStack(spacing: 0) {
             ScrollView(.vertical, showsIndicators: false) {
@@ -1254,7 +1324,6 @@ struct PorcheIslandView: View {
                     statsRow("Prijenos", "—")
                     statsRow("Prijeđeno (vožnja)", "—")
                     statsRow("Vrijeme vožnje", "—")
-
                     statsSectionTitle("2. Performanse (Telemetrija)")
                     statsRow("Kadenca", "—")
                     statsRow("Snaga vozača", "—")
@@ -1263,7 +1332,6 @@ struct PorcheIslandView: View {
                     statsRow("Potrošnja", "—")
                     statsRow("Prosječna brzina", "—")
                     statsRow("Maks. brzina", "—")
-
                     statsSectionTitle("3. Topografija i teren")
                     statsRow("Nadmorska visina", "—")
                     statsRow("Nagib", "—")
@@ -1271,7 +1339,6 @@ struct PorcheIslandView: View {
                     statsRow("Ukupni spust", "—")
                     statsRow("Maks. nagib", "—")
                     statsRow("VAM", "—")
-
                     statsSectionTitle("4. Zdravlje sustava")
                     statsRow("Temperatura motora", "—")
                     statsRow("Temperatura baterije", "—")
@@ -1279,7 +1346,6 @@ struct PorcheIslandView: View {
                     statsRow("Zdravlje baterije (SOH)", "—")
                     statsRow("Ciklusi punjenja", "—")
                     statsRow("Do servisa", "—")
-
                     statsSectionTitle("5. Povijest (tjedan / mjesec)")
                     statsRow("Kilometraža (odometar)", "—")
                     statsRow("Tjedni cilj", "—")
@@ -1287,7 +1353,6 @@ struct PorcheIslandView: View {
                     statsRow("Kalorije", "—")
                     statsRow("Vrijeme u Eco", "—")
                     statsRow("Vrijeme u Turbo", "—")
-
                     statsSectionTitle("6. Pametni uvidi")
                     statsRow("Preporučeni tlak", "—")
                 }
@@ -1296,7 +1361,7 @@ struct PorcheIslandView: View {
                 .padding(.bottom, 8)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-
+            Spacer(minLength: 0)
             VStack(spacing: 8) {
                 HStack {
                     Text("Mapa za spremanje")
@@ -1312,7 +1377,6 @@ struct PorcheIslandView: View {
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
                 .background(islandColors.buttonBg.opacity(0.5), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
-
                 Button {
                     withAnimation(islandSpring) { selectedButton = nil }
                 } label: {
@@ -1324,22 +1388,19 @@ struct PorcheIslandView: View {
                         .background(islandColors.accentGreen, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
                 }
                 .buttonStyle(.plain)
-                .padding(.horizontal, 16)
-                .padding(.bottom, 12)
-                .padding(.top, 4)
             }
             .padding(.horizontal, 16)
+            .padding(.top, 8)
+            .padding(.bottom, 4)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
-
     private func statsSectionTitle(_ title: String) -> some View {
         Text(title)
             .font(.system(size: 13, weight: .semibold))
             .foregroundStyle(islandColors.accentGreen)
             .padding(.top, 4)
     }
-
     private func statsRow(_ label: String, _ value: String) -> some View {
         HStack {
             Text(label)
@@ -1352,10 +1413,7 @@ struct PorcheIslandView: View {
         }
         .padding(.vertical, 4)
     }
-
     private let bikePartIconSize: CGFloat = 28
-
-    /// Katalog servisa: svi dijelovi prema vrhu, format „trenutno/cilj” (npr. 1200/1200).
     private var bikeContent: some View {
         ScrollView(.vertical, showsIndicators: false) {
             VStack(spacing: 0) {
@@ -1374,7 +1432,6 @@ struct PorcheIslandView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
-
     private func bikeCatalogRow(part: AppIcons.Part) -> some View {
         HStack(spacing: 12) {
             AppIcons.imagePart(part)
@@ -1396,8 +1453,6 @@ struct PorcheIslandView: View {
         .background(islandColors.buttonBg.opacity(0.5), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
         .padding(.bottom, 6)
     }
-
-    /// Format „trenutno/cilj” po dijelu (npr. 1200/1200 km). Kasnije povezati na prave podatke.
     private func bikeServiceText(for part: AppIcons.Part) -> String {
         let unit = part == .batery ? " %" : " km"
         switch part {
@@ -1412,7 +1467,6 @@ struct PorcheIslandView: View {
         case .link: return "1500/1500\(unit)"
         }
     }
-
     private var settingsContent: some View {
         ScrollView(.vertical, showsIndicators: false) {
             VStack(alignment: .leading, spacing: 14) {
@@ -1462,7 +1516,6 @@ struct PorcheIslandView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
-
     private func settingsSection<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title)
@@ -1473,7 +1526,6 @@ struct PorcheIslandView: View {
             }
         }
     }
-
     private func settingsRow(_ label: String) -> some View {
         HStack {
             Text(label)
@@ -1489,10 +1541,7 @@ struct PorcheIslandView: View {
         .background(islandColors.buttonBg.opacity(0.5), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
         .padding(.bottom, 4)
     }
-
 }
-
-/// Animacija bijelog gumba (strelica): pritisak smanji scale, otpuštanje spring natrag.
 private struct ChevronCapsuleButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
@@ -1501,8 +1550,6 @@ private struct ChevronCapsuleButtonStyle: ButtonStyle {
             .animation(.spring(response: 0.3, dampingFraction: 0.65), value: configuration.isPressed)
     }
 }
-
-/// Okrugli gumb za red ikona u islandu (Route, Graph, chevron.down, Bike, Settings).
 private struct IslandRoundIconButton: View {
     @Environment(\.islandColors) private var islandColors
     let image: Image
@@ -1510,9 +1557,7 @@ private struct IslandRoundIconButton: View {
     var isSelected: Bool = false
     var accessibilityId: String? = nil
     let action: () -> Void
-
     private var iconSize: CGFloat { size * 0.55 }
-
     var body: some View {
         Button(action: action) {
             image
@@ -1531,18 +1576,14 @@ private struct IslandRoundIconButton: View {
         .accessibilityIdentifier(accessibilityId ?? "")
     }
 }
-
-/// Jedan stupac u navigacijskom panelu: gore broj, vertikalno +/− (veći, rastu prema gore), dolje natpis.
 private struct NavigationControlColumn: View {
     @Environment(\.islandColors) private var islandColors
     let label: String
     let valueLabel: String
     let step: Double
     let onStep: (Double) -> Void
-
     private let pillWidth: CGFloat = 56
     private let pillHeight: CGFloat = 48
-
     var body: some View {
         VStack(alignment: .center, spacing: 6) {
             Text(valueLabel)
@@ -1573,14 +1614,11 @@ private struct NavigationControlColumn: View {
         .frame(maxWidth: .infinity)
     }
 }
-
-/// Gumb na lijevoj strani navigacijskog panela (3 vertikalna). Može SF Symbol (icon) ili custom slika (customImage).
 private struct NavigationPanelSideButton: View {
     @Environment(\.islandColors) private var islandColors
     var icon: String = "circle"
     var label: String = ""
     var customImage: Image? = nil
-
     var body: some View {
         Button { } label: {
             VStack(spacing: 4) {
@@ -1605,7 +1643,6 @@ private struct NavigationPanelSideButton: View {
         .buttonStyle(.plain)
     }
 }
-
 private struct IslandActionButton: View {
     @Environment(\.islandColors) private var islandColors
     let icon: String
@@ -1613,7 +1650,6 @@ private struct IslandActionButton: View {
     var subtitle: String?
     let accentColor: Color
     let action: () -> Void
-
     var body: some View {
         Button(action: action) {
             VStack(spacing: 4) {
@@ -1639,7 +1675,42 @@ private struct IslandActionButton: View {
         .buttonStyle(.plain)
     }
 }
-
+private struct IslandChevronCloseButton: View {
+    var size: CGFloat = 52
+    let action: () -> Void
+    var body: some View {
+        Button(action: action) {
+            ZStack {
+                Circle()
+                    .fill(Color.white)
+                    .frame(width: size, height: size)
+                Image(systemName: "chevron.down")
+                    .font(.system(size: 22, weight: .medium))
+                    .foregroundStyle(.black)
+            }
+            .frame(width: size, height: size)
+            .contentShape(Circle())
+        }
+        .buttonStyle(ChevronCapsuleButtonStyle())
+    }
+}
+private struct IslandCircleIconButton<Icon: View>: View {
+    let size: CGFloat
+    let backgroundColor: Color
+    let foregroundColor: Color
+    @ViewBuilder let icon: () -> Icon
+    let action: () -> Void
+    var body: some View {
+        Button(action: action) {
+            icon()
+                .foregroundStyle(foregroundColor)
+                .frame(width: size, height: size)
+                .background(backgroundColor, in: Circle())
+                .contentShape(Circle())
+        }
+        .buttonStyle(.plain)
+    }
+}
 #Preview {
     ZStack(alignment: .bottom) {
         Color.gray.opacity(0.3).ignoresSafeArea()

@@ -1,5 +1,4 @@
 import Foundation
-
 struct Rider: Identifiable, Codable {
     let id: UUID
     var name: String

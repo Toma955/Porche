@@ -1,6 +1,4 @@
 import Foundation
-
-// MARK: - 1. Osnovni podaci (Live Dashboard)
 struct LiveDashboardStats {
     var speedKmh: Double = 0
     var batteryPercent: Int = 100
@@ -11,8 +9,6 @@ struct LiveDashboardStats {
     var distanceThisRideKm: Double = 0
     var rideDurationMinutes: Int = 0
 }
-
-// MARK: - 2. Performanse (Real-time Telemetry)
 struct TelemetryStats {
     var cadenceRpm: Int = 0
     var riderPowerW: Int = 0
@@ -22,8 +18,6 @@ struct TelemetryStats {
     var averageSpeedKmh: Double = 0
     var maxSpeedKmh: Double = 0
 }
-
-// MARK: - 3. Topografija i teren (Track Stats)
 struct TrackStats {
     var altitudeM: Double = 0
     var gradientPercent: Double = 0
@@ -32,8 +26,6 @@ struct TrackStats {
     var maxGradientPercent: Double = 0
     var vamMperHour: Double = 0
 }
-
-// MARK: - 4. Zdravlje sustava (Diagnostics & Health)
 struct DiagnosticsStats {
     var motorTempC: Double = 0
     var batteryTempC: Double = 0
@@ -43,8 +35,6 @@ struct DiagnosticsStats {
     var chargeCycles: Int = 0
     var kmUntilService: Double = 0
 }
-
-// MARK: - 5. Napredna statistika (Weekly/Monthly)
 struct HistoryStats {
     var odometerKm: Double = 0
     var weeklyGoalKm: Double = 150
@@ -54,15 +44,11 @@ struct HistoryStats {
     var timeInEcoPercent: Double = 0
     var timeInTurboPercent: Double = 0
 }
-
-// MARK: - 6. Pametni podaci (Smart Insights)
 struct SmartInsights {
     var recommendedPressureBar: Double = 0
     var batteryWarningMessage: String? = nil
     var timeToFullChargeMinutes: Int? = nil
 }
-
-// MARK: - Sve statistike na jednom mjestu
 struct RideStatistics {
     var live: LiveDashboardStats = .init()
     var telemetry: TelemetryStats = .init()
@@ -70,7 +56,6 @@ struct RideStatistics {
     var diagnostics: DiagnosticsStats = .init()
     var history: HistoryStats = .init()
     var insights: SmartInsights = .init()
-
     static var placeholder: RideStatistics {
         var s = RideStatistics()
         s.live.speedKmh = 24

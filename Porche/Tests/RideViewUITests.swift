@@ -1,5 +1,14 @@
 import XCTest
 
 final class RideViewUITests: XCTestCase {
-    func testExample() throws {}
+
+    override func setUpWithError() throws {
+        continueAfterFailure = false
+    }
+
+    @MainActor
+    func testLaunchAndQuit() throws {
+        let app = XCUIApplication()
+        app.launch()
+    }
 }

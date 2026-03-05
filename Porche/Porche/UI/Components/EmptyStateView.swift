@@ -1,5 +1,4 @@
 import SwiftUI
-
 struct EmptyStateView: View {
     var title: String
     var message: String?

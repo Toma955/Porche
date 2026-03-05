@@ -1,5 +1,4 @@
 import SwiftUI
-
 struct IslandBottomStackView: View {
     @EnvironmentObject private var appState: AppState
     @ObservedObject var island: Island
@@ -8,9 +7,7 @@ struct IslandBottomStackView: View {
     var onFindMe: (() -> Void)? = nil
     var onCancelFindMe: (() -> Void)? = nil
     var onPokreniNavigaciju: ((Bool, String, String) -> Void)? = nil
-    /// Poziva se kad korisnik u vožnji stisne Island (povratak na početak) – reset vožnje i prikaza bicikla.
     var onExitRide: (() -> Void)? = nil
-
     var body: some View {
         VStack(spacing: 0) {
             Spacer(minLength: 0)
@@ -27,18 +24,14 @@ struct IslandBottomStackView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
     }
 }
-
 private enum IslandTopBarColors {
     static let background = Color.black.opacity(0.85)
     static let nightBackground = AppColors.nightRidingOrange.opacity(0.95)
     static let text = Color.white
     static let secondary = Color.white.opacity(0.8)
 }
-
-/// Gornji trak: baterija (%), domet (km), mod rada, mali kompas.
 struct IslandTopBarView: View {
     @EnvironmentObject private var appState: AppState
-
     private var batteryPercent: Int {
         appState.batteryStatus?.percent ?? 87
     }
@@ -48,7 +41,6 @@ struct IslandTopBarView: View {
     private var modeLabel: String {
         appState.assistMode.displayTitle
     }
-
     var body: some View {
         HStack(spacing: 16) {
             HStack(spacing: 4) {
@@ -80,7 +72,6 @@ struct IslandTopBarView: View {
         .padding(.bottom, 8)
     }
 }
-
 struct IslandParametersView: View {
     var isHidden: Bool = true
     var body: some View {
@@ -95,7 +86,6 @@ struct IslandParametersView: View {
         }
     }
 }
-
 struct IslandBasicInfoView: View {
     var body: some View {
         HStack(spacing: 12) {
@@ -111,7 +101,6 @@ struct IslandBasicInfoView: View {
         .padding(.bottom, 6)
     }
 }
-
 #Preview {
     ZStack(alignment: .bottom) {
         Color(.systemBackground).ignoresSafeArea()

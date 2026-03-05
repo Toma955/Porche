@@ -1,6 +1,5 @@
 import Foundation
 import HealthKit
-
 final class HealthKitService {
     private let store = HKHealthStore()
     func requestAuthorization() async throws {}

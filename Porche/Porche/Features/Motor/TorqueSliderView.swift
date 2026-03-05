@@ -1,6 +1,4 @@
 import SwiftUI
-
-/// Podešavanje 0–85 Nm po modu
 struct TorqueSliderView: View {
     @Binding var torqueNm: Int
     var body: some View {

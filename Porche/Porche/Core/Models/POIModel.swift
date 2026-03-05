@@ -1,6 +1,5 @@
 import Foundation
 import CoreLocation
-
 struct POIModel: Identifiable, Codable {
     let id: UUID
     var name: String

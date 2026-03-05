@@ -1,6 +1,4 @@
 import Foundation
-
-/// Modovi rada motora e-bikea (8 modova).
 enum AssistMode: String, Codable, CaseIterable {
     case off
     case eco
@@ -10,8 +8,6 @@ enum AssistMode: String, Codable, CaseIterable {
     case customIndividual
     case auto
     case walk
-
-    /// Kratki naziv za UI (gornji trak, gumb).
     var displayTitle: String {
         switch self {
         case .off: return "OFF"
@@ -24,8 +20,6 @@ enum AssistMode: String, Codable, CaseIterable {
         case .walk: return "WALK"
         }
     }
-
-    /// Opis moda za prikaz u izboru.
     var description: String {
         switch self {
         case .off: return "Sustav je upaljen, ali motor ne pruža pomoć"

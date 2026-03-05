@@ -1,5 +1,4 @@
 import Foundation
-
 struct WeatherData {
     var temperature: Double
     var condition: String

@@ -1,11 +1,8 @@
 import SwiftUI
-
-/// Mali overlay s logovima – vidiš što se događa u aplikaciji.
 struct DebugConsoleView: View {
     @EnvironmentObject var log: AppDebugLog
     @State private var isExpanded = true
     @State private var copiedFeedback = false
-
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
@@ -33,7 +30,6 @@ struct DebugConsoleView: View {
             .padding(.horizontal, 8)
             .padding(.vertical, 6)
             .background(Color.orange.opacity(0.3))
-
             if isExpanded {
                 ScrollViewReader { proxy in
                     ScrollView(.vertical, showsIndicators: true) {
@@ -68,15 +64,10 @@ struct DebugConsoleView: View {
         .onAppear { log.log("Konzola spremna") }
     }
 }
-
 #Preview {
     VStack {
         DebugConsoleView()
             .environmentObject(AppDebugLog.shared)
         Spacer()
-    }
-    .onAppear {
-        AppDebugLog.shared.log("Test poruka 1")
-        AppDebugLog.shared.log("3D model učitán: Resources/3DModels/Porche_Ebike.usdz")
     }
 }

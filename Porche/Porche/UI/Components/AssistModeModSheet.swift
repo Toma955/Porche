@@ -1,10 +1,7 @@
 import SwiftUI
-
-/// Sheet za izbor moda rada motora (8 modova) – otvara se iz zelenog gumba Mod.
 struct AssistModeModSheet: View {
     @EnvironmentObject private var appState: AppState
     @Environment(\.dismiss) private var dismiss
-
     var body: some View {
         NavigationStack {
             List(AssistMode.allCases, id: \.self) { mode in
@@ -37,7 +34,6 @@ struct AssistModeModSheet: View {
         }
     }
 }
-
 #Preview {
     AssistModeModSheet()
         .environmentObject(AppState())

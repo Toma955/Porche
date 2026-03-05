@@ -1,9 +1,7 @@
 import SwiftUI
-
 struct BikeModelView: View {
     var rotationSpeed: Double = 0.3
     var onNextAction: (() -> Void)?
-
     var body: some View {
         ZStack {
             Color.white.ignoresSafeArea(.container)
@@ -16,7 +14,6 @@ struct BikeModelView: View {
                     .foregroundStyle(.secondary)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-
             VStack {
                 Spacer()
                 Button("Nastavi") {
@@ -28,9 +25,6 @@ struct BikeModelView: View {
         }
     }
 }
-
 #Preview {
-    BikeModelView(rotationSpeed: 0.4) {
-        print("Next tapped")
-    }
+    BikeModelView(rotationSpeed: 0.4) {}
 }

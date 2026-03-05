@@ -1,8 +1,6 @@
 import SwiftUI
-
 struct WelcomeView: View {
     var onNext: (() -> Void)?
-
     var body: some View {
         ZStack {
             Color(.systemBackground).ignoresSafeArea()

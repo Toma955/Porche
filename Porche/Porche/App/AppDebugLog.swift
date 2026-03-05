@@ -1,9 +1,6 @@
 import SwiftUI
-
-/// Jednostavna konzola u aplikaciji – svi logovi se prikazuju na ekranu.
 final class AppDebugLog: ObservableObject {
     static let shared = AppDebugLog()
-
     @Published private(set) var lines: [String] = []
     private let maxLines = 40
     private let formatter: DateFormatter = {
@@ -11,12 +8,8 @@ final class AppDebugLog: ObservableObject {
         f.dateFormat = "HH:mm:ss.SSS"
         return f
     }()
-
     private init() {}
-
     func log(_ message: String) {
-        // Uvijek ispiši u Xcode konzolu – vidiš i kad app pukne prije nego se prikaže overlay
-        print("[Porche] \(message)")
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             let line = "\(self.formatter.string(from: Date())) \(message)"
@@ -26,7 +19,6 @@ final class AppDebugLog: ObservableObject {
             }
         }
     }
-
     func clear() {
         DispatchQueue.main.async { [weak self] in
             self?.lines.removeAll()

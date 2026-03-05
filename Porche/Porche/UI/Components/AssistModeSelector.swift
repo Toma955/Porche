@@ -1,6 +1,4 @@
 import SwiftUI
-
-/// Eco / Trail / Boost switcher
 struct AssistModeSelector: View {
     @Binding var selectedMode: AssistMode
     var body: some View {

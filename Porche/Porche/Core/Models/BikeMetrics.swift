@@ -1,5 +1,4 @@
 import Foundation
-
 struct BikeMetrics {
     var speed: Double
     var cadence: Int
