@@ -5,6 +5,7 @@ enum WelcomeSoundService {
 
     static func playWelcomeSoundIfNeeded(hasPlayed: inout Bool) {
         guard !hasPlayed else { return }
+        if ProcessInfo.processInfo.arguments.contains("--uitesting") { return }
         hasPlayed = true
         guard let url = urlForWelcomeSound() else { return }
         DispatchQueue.main.async {

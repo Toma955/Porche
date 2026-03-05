@@ -555,7 +555,7 @@ struct PorcheIslandView: View {
         let totalLen = route.steps.reduce(0.0) { $0 + Double($1.distanceMeters) }
         let currentLen = progress * totalLen
         var acc: Double = 0
-        for (i, step) in route.steps.enumerated() {
+        for (_, step) in route.steps.enumerated() {
             let stepEnd = acc + Double(step.distanceMeters)
             if stepEnd > currentLen {
                 let toNext = stepEnd - currentLen
