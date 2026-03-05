@@ -1,7 +1,16 @@
 import Foundation
 import MapKit
 
-/// Autocomplete lokacija preko MapKit; regija postavljena na Europu.
+/// Regija za pretragu hrvatskih lokacija (centar Hrvatske + susjedi).
+private let croatiaRegion: MKCoordinateRegion = {
+    let center = CLLocationCoordinate2D(latitude: 45.1, longitude: 15.2)
+    return MKCoordinateRegion(
+        center: center,
+        span: MKCoordinateSpan(latitudeDelta: 6, longitudeDelta: 8)
+    )
+}()
+
+/// Autocomplete lokacija preko MapKit; regija postavljena na Hrvatsku.
 final class LocationSearchCompleter: NSObject, ObservableObject {
     private let completer = MKLocalSearchCompleter()
 
@@ -16,11 +25,7 @@ final class LocationSearchCompleter: NSObject, ObservableObject {
         super.init()
         completer.delegate = self
         completer.resultTypes = [.address, .pointOfInterest]
-        let europeCenter = CLLocationCoordinate2D(latitude: 50.0, longitude: 10.0)
-        completer.region = MKCoordinateRegion(
-            center: europeCenter,
-            span: MKCoordinateSpan(latitudeDelta: 35, longitudeDelta: 40)
-        )
+        completer.region = croatiaRegion
     }
 
     func clear() {

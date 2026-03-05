@@ -11,7 +11,7 @@ struct BikeModelView: View {
                 Image(systemName: "bicycle")
                     .font(.system(size: 80))
                     .foregroundStyle(.secondary)
-                Text("Porche eBike")
+                Text("Porche Ebike")
                     .font(.title2.weight(.medium))
                     .foregroundStyle(.secondary)
             }

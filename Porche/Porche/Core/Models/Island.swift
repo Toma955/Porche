@@ -10,7 +10,7 @@ struct IslandButtonItem: Identifiable {
 
 @MainActor
 final class Island: ObservableObject {
-    static let defaultTitle = "Porche"
+    static let defaultTitle = "Porche Ebike"
 
     @Published var title: String = Island.defaultTitle
     @Published var buttons: [IslandButtonItem] = []

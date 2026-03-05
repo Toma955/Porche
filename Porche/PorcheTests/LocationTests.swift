@@ -73,7 +73,7 @@ final class LocationTests: XCTestCase {
         }
 
         XCTAssertEqual(receivedUpdates.count, 20)
-        XCTAssertEqual(receivedUpdates.first?.coordinate.latitude, SimulatedRoute.trgBanaJelacica.latitude, accuracy: 0.001)
-        XCTAssertEqual(receivedUpdates.last?.coordinate.latitude, SimulatedRoute.jarun.latitude, accuracy: 0.001)
+        XCTAssertEqual(receivedUpdates.first!.coordinate.latitude, SimulatedRoute.trgBanaJelacica.latitude, accuracy: 0.001)
+        XCTAssertEqual(receivedUpdates.last!.coordinate.latitude, SimulatedRoute.jarun.latitude, accuracy: 0.001)
     }
 }

@@ -7,8 +7,8 @@ private let defaultCameraDistance: CGFloat = 650
 private let userLocationCameraDistance: CGFloat = 500
 private let mapBikeWidth: CGFloat = 212
 private let mapBikeHeight: CGFloat = 192
-private let normalBikeWidth: CGFloat = 220
-private let normalBikeHeight: CGFloat = 200
+private let normalBikeWidth: CGFloat = 380
+private let normalBikeHeight: CGFloat = 360
 private let routeTransitionDuration: Double = 0.28
 private let bikeSpring = Animation.spring(response: 0.32, dampingFraction: 0.84)
 
@@ -92,10 +92,10 @@ struct IslandCentralDisplayView: View {
                 bikeView(width: mapBikeWidth, height: mapBikeHeight, findMeMode: true)
                 Spacer(minLength: 0)
             } else {
-                Spacer(minLength: 16)
+                Spacer(minLength: 12)
                 bikeView(width: normalBikeWidth, height: normalBikeHeight, findMeMode: false)
                     .id("bike-home")
-                Spacer(minLength: 220)
+                Spacer(minLength: 60)
             }
         }
         .animation(bikeSpring, value: appState.isRouteActive)
@@ -120,6 +120,7 @@ struct IslandCentralDisplayView: View {
 
     private var mapWithBinding: some View {
         Map(position: $mapCameraPosition) {
+            UserAnnotation()
             if let route = appState.activeRoute, !route.waypoints.isEmpty {
                 MapPolyline(coordinates: route.waypoints)
                     .stroke(.blue, lineWidth: 5)
