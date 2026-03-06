@@ -1,5 +1,7 @@
 import SwiftUI
 
+// MARK: - PorcheApp
+
 @main
 struct PorcheApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate

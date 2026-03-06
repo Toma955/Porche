@@ -1,4 +1,7 @@
 import Foundation
+
+// MARK: - ETubeService
+
 final class ETubeService: ShimanoConfigurable {
     func readMotorProfile() async throws -> ShimanoMotorProfile {
         fatalError("TODO")

@@ -1,4 +1,7 @@
 import Foundation
+
+// MARK: - Double
+
 extension Double {
     var toKmh: Double { self }
     var toNm: Double { self }

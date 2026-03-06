@@ -1,5 +1,8 @@
 import SwiftUI
 
+
+// MARK: - SplashLoadingView
+
 struct SplashLoadingView: View {
     var progress: Double
     var onExitComplete: () -> Void

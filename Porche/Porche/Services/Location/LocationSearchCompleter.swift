@@ -1,5 +1,8 @@
 import Foundation
 import MapKit
+
+// MARK: - LocationSearchCompleter
+
 final class LocationSearchCompleter: NSObject, ObservableObject {
     private let completer = MKLocalSearchCompleter()
     @Published var results: [MKLocalSearchCompletion] = []

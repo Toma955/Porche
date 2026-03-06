@@ -1,4 +1,7 @@
 import Foundation
+
+// MARK: - ServiceReminder
+
 struct ServiceReminder: Identifiable {
     let id: UUID
     var dueDate: Date

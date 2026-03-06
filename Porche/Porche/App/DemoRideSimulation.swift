@@ -3,6 +3,9 @@ import CoreLocation
 import MapKit
 
 @MainActor
+
+// MARK: - DemoRideSimulation
+
 enum DemoRideSimulation {
     static let startName = "Trg bana Jelačića"
     static let destinationName = "Jarun"

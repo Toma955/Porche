@@ -1,5 +1,8 @@
 import Foundation
 import CoreLocation
+
+// MARK: - LocationManager
+
 final class LocationManager: NSObject, ObservableObject {
     private let manager = CLLocationManager()
     @Published var authorizationStatus: CLAuthorizationStatus = .notDetermined

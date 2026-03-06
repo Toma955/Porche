@@ -1,4 +1,7 @@
 import Foundation
+
+// MARK: - POIType
+
 enum POIType: String, Codable, CaseIterable {
     case cafe
     case service

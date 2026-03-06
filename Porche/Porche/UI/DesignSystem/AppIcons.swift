@@ -1,5 +1,8 @@
 import SwiftUI
 import UIKit
+
+// MARK: - AppIcons
+
 enum AppIcons {
     static let route = "Route"
     static let graph = "Graph"

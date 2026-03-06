@@ -1,4 +1,7 @@
 import Foundation
+
+// MARK: - EBike
+
 struct EBike: Identifiable, Codable {
     let id: UUID
     var name: String

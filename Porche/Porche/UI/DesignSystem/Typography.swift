@@ -1,5 +1,8 @@
 import SwiftUI
 import UIKit
+
+// MARK: - AppTypography
+
 enum AppTypography {
     private static let archivoName = "Archivo"
     private static let isArchivoAvailable: Bool = {

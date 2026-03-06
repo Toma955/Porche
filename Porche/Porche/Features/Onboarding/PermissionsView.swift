@@ -1,4 +1,7 @@
 import SwiftUI
+
+// MARK: - PermissionsView
+
 struct PermissionsView: View {
     var onNext: (() -> Void)?
     var body: some View {

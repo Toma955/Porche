@@ -1,4 +1,7 @@
 import SwiftUI
+
+// MARK: - AppColors
+
 enum AppColors {
     static let primary = Color.primary
     static let secondary = Color.secondary

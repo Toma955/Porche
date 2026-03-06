@@ -1,4 +1,7 @@
 import CoreLocation
+
+// MARK: - CLLocation
+
 extension CLLocation {
 }
 extension CLLocationCoordinate2D {

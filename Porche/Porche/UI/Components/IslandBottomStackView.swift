@@ -1,4 +1,7 @@
 import SwiftUI
+
+// MARK: - IslandBottomStackView
+
 struct IslandBottomStackView: View {
     @EnvironmentObject private var appState: AppState
     @ObservedObject var island: Island

@@ -1,4 +1,7 @@
 import Foundation
+
+// MARK: - BikeError
+
 enum BikeError: Error {
     case connectionLost
     case motorFault

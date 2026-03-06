@@ -1,4 +1,7 @@
 import SwiftUI
+
+// MARK: - EmptyStateView
+
 struct EmptyStateView: View {
     var title: String
     var message: String?

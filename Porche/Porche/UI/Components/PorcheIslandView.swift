@@ -1,6 +1,9 @@
 import SwiftUI
 import MapKit
 import UIKit
+
+// MARK: - Island styling & helpers
+
 private let islandSpring = Animation.spring(response: 0.35, dampingFraction: 0.82)
 private let islandSpringContent = Animation.spring(response: 0.4, dampingFraction: 0.8)
 private let expandedContentTransition = AnyTransition.asymmetric(
@@ -108,6 +111,9 @@ private enum IslandSelectedButton: String, CaseIterable {
     case bike
     case settings
 }
+
+// MARK: - PorcheIslandView
+
 struct PorcheIslandView: View {
     @EnvironmentObject private var appState: AppState
     @ObservedObject var island: Island
@@ -199,6 +205,9 @@ struct PorcheIslandView: View {
     private let rideModeBottomBarHeight: CGFloat = 56
     private let rideModeStatsRowSpacing: CGFloat = 8
     private let rideModeStatsHorizontalPadding: CGFloat = 10
+
+    // MARK: - Body
+
     var body: some View {
         VStack(spacing: 0) {
             Spacer(minLength: 0)
@@ -2305,8 +2314,10 @@ struct PorcheIslandView: View {
         .background(islandColors.buttonBg.opacity(0.5), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
         .padding(.bottom, 4)
     }
-}
-private struct ChevronCapsuleButtonStyle: ButtonStyle {
+
+    // MARK: - Button styles & subviews
+
+    private struct ChevronCapsuleButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .scaleEffect(configuration.isPressed ? 0.88 : 1.0)

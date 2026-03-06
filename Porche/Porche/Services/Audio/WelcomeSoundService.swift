@@ -1,5 +1,8 @@
 import AVFoundation
 
+
+// MARK: - WelcomeSoundService
+
 enum WelcomeSoundService {
     private static var welcomePlayer: AVAudioPlayer?
 

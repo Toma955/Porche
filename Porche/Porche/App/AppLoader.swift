@@ -2,6 +2,8 @@ import SwiftUI
 
 private let uiTestingLaunchArg = "--uitesting"
 
+// MARK: - AppLaunch
+
 enum AppLaunch {
     static var isUITesting: Bool {
         ProcessInfo.processInfo.arguments.contains(uiTestingLaunchArg)

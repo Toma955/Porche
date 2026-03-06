@@ -1,5 +1,8 @@
 import SwiftUI
 import CoreLocation
+
+// MARK: - AppState
+
 @MainActor
 final class AppState: ObservableObject {
     @Published var isAppReady: Bool = false

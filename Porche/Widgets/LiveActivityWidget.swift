@@ -2,6 +2,9 @@ import ActivityKit
 import WidgetKit
 import SwiftUI
 
+
+// MARK: - LiveActivityWidget
+
 struct LiveActivityWidget: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: EBikeAttributes.self) { context in

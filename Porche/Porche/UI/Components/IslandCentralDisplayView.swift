@@ -3,6 +3,8 @@ import MapKit
 import CoreLocation
 private let trgBanaJelacica = CLLocationCoordinate2D(latitude: 45.8129, longitude: 15.9775)
 private let defaultCameraDistance: CGFloat = 650
+
+// MARK: - MapCenterValue
 private struct MapCenterValue: Equatable {
     let latitude: Double
     let longitude: Double

@@ -1,4 +1,7 @@
 import SwiftUI
+
+// MARK: - AssistModeSelector
+
 struct AssistModeSelector: View {
     @Binding var selectedMode: AssistMode
     var body: some View {

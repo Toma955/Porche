@@ -1,5 +1,8 @@
 import SwiftUI
 import SceneKit
+
+// MARK: - SceneCache
+
 private final class SceneCache {
     static let shared = SceneCache()
     var scene: SCNScene?

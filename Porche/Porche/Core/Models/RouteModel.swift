@@ -1,9 +1,15 @@
 import Foundation
 import CoreLocation
+
+// MARK: - RouteStepModel
+
 struct RouteStepModel: Codable, Equatable {
     let instructionText: String
     let distanceMeters: Double
 }
+
+// MARK: - RouteModel
+
 struct RouteModel: Identifiable, Codable, Equatable {
     let id: UUID
     var name: String

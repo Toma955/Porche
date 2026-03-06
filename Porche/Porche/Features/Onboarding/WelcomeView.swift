@@ -1,4 +1,7 @@
 import SwiftUI
+
+// MARK: - WelcomeView
+
 struct WelcomeView: View {
     var onNext: (() -> Void)?
     var body: some View {

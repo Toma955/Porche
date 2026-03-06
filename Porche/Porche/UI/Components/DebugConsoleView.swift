@@ -1,4 +1,7 @@
 import SwiftUI
+
+// MARK: - DebugConsoleView
+
 struct DebugConsoleView: View {
     @EnvironmentObject var log: AppDebugLog
     @State private var isExpanded = true

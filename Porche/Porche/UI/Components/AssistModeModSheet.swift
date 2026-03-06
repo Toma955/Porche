@@ -1,4 +1,7 @@
 import SwiftUI
+
+// MARK: - AssistModeModSheet
+
 struct AssistModeModSheet: View {
     @EnvironmentObject private var appState: AppState
     @Environment(\.dismiss) private var dismiss

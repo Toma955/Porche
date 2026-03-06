@@ -1,4 +1,7 @@
 import Foundation
+
+// MARK: - LiveDashboardStats
+
 struct LiveDashboardStats {
     var speedKmh: Double = 0
     var batteryPercent: Int = 0

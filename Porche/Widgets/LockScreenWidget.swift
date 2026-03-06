@@ -1,6 +1,9 @@
 import WidgetKit
 import SwiftUI
 
+
+// MARK: - LockScreenWidget
+
 struct LockScreenWidget: Widget {
     let kind: String = "LockScreenWidget"
 

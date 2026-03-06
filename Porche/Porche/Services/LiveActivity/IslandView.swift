@@ -1,5 +1,8 @@
 import SwiftUI
 import ActivityKit
+
+// MARK: - IslandView
+
 struct IslandView: View {
     let state: EBikeAttributes.ContentState
     var body: some View {

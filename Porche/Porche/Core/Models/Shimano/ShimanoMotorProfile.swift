@@ -1,4 +1,7 @@
 import Foundation
+
+// MARK: - ShimanoMotorProfile
+
 struct ShimanoMotorProfile: Identifiable {
     let id: UUID
     var name: String

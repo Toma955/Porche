@@ -1,5 +1,8 @@
 import SwiftUI
 import CoreLocation
+
+// MARK: - ContentView
+
 struct ContentView: View {
     @EnvironmentObject private var appState: AppState
     @EnvironmentObject private var locationManager: LocationManager

@@ -1,4 +1,7 @@
 import SwiftUI
+
+// MARK: - PulseModifier
+
 struct PulseModifier: ViewModifier {
     @State private var isPulsing = false
     func body(content: Content) -> some View {

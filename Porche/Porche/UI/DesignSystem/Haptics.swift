@@ -1,4 +1,7 @@
 import UIKit
+
+// MARK: - Haptics
+
 enum Haptics {
     static func light() {
         let generator = UIImpactFeedbackGenerator(style: .light)

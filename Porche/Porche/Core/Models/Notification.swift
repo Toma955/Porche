@@ -1,4 +1,7 @@
 import Foundation
+
+// MARK: - AppNotification
+
 struct AppNotification: Identifiable {
     let id: UUID
     var title: String

@@ -2,7 +2,8 @@ import XCTest
 import CoreLocation
 @testable import Porche
 
-/// Jedan integracijski test koji provjerava sve ključne modele i logiku. Na GitHubu se vrti samo ovaj test.
+// MARK: - PorcheIntegrationTests
+
 final class PorcheIntegrationTests: XCTestCase {
 
     @MainActor

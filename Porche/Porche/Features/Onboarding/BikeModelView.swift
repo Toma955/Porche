@@ -1,4 +1,7 @@
 import SwiftUI
+
+// MARK: - BikeModelView
+
 struct BikeModelView: View {
     var rotationSpeed: Double = 0.3
     var onNextAction: (() -> Void)?

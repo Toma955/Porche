@@ -1,4 +1,7 @@
 import SwiftUI
+
+// MARK: - BatteryGaugeView
+
 struct BatteryGaugeView: View {
     var percent: Int
     var capacityWh: Int = 630

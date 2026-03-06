@@ -1,4 +1,7 @@
 import Foundation
+
+// MARK: - RideSession
+
 struct RideSession: Identifiable, Codable {
     let id: UUID
     var startDate: Date

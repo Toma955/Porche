@@ -1,5 +1,8 @@
 import SwiftUI
 
+
+// MARK: - ElevationChartView
+
 struct ElevationChartView: View {
     var elevationData: [Double] = []
     var body: some View {

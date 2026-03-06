@@ -1,4 +1,7 @@
 import SwiftUI
+
+// MARK: - AppDebugLog
+
 final class AppDebugLog: ObservableObject {
     static let shared = AppDebugLog()
     @Published private(set) var lines: [String] = []

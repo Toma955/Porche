@@ -1,4 +1,7 @@
 import Foundation
+
+// MARK: - AssistMode
+
 enum AssistMode: String, Codable, CaseIterable {
     case off
     case eco

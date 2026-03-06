@@ -1,4 +1,7 @@
 import Foundation
+
+// MARK: - OTAUpdateModel
+
 struct OTAUpdateModel {
     var currentFirmwareVersion: String
     var availableVersion: String?

@@ -2,6 +2,8 @@ import XCTest
 import CoreLocation
 @testable import Porche
 
+// MARK: - PorcheUnitTests
+
 final class PorcheUnitTests: XCTestCase {
 
     func testRideStatisticsDefaults() {
