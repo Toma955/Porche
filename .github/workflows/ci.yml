@@ -1,0 +1,22 @@
+# CI: na GitHubu se vrti samo jedan integracijski test (testIntegrationAll).
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  integration-test:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run integration test
+        run: |
+          cd Porche
+          xcodebuild test \
+            -scheme Porche \
+            -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' \
+            -only-testing:PorcheTests/PorcheIntegrationTests/testIntegrationAll

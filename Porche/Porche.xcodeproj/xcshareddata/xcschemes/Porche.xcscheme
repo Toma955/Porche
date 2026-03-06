@@ -34,6 +34,20 @@
                ReferencedContainer = "container:Porche.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "NO"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "F031AE852F58751000BC6D30"
+               BuildableName = "PorcheTests.xctest"
+               BlueprintName = "PorcheTests"
+               ReferencedContainer = "container:Porche.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
@@ -67,6 +81,17 @@
                BlueprintIdentifier = "F031AE6A2F58751000BC6D30"
                BuildableName = "PorcheUITests.xctest"
                BlueprintName = "PorcheUITests"
+               ReferencedContainer = "container:Porche.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "F031AE852F58751000BC6D30"
+               BuildableName = "PorcheTests.xctest"
+               BlueprintName = "PorcheTests"
                ReferencedContainer = "container:Porche.xcodeproj">
             </BuildableReference>
          </TestableReference>
