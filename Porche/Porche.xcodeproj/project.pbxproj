@@ -12,19 +12,19 @@
 			containerPortal = F031AE492F58750F00BC6D30 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = F031AE502F58750F00BC6D30;
-			remoteInfo = Porche;
+			remoteInfo = Porsche;
 		};
 		F031AE862F58751000BC6D30 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = F031AE492F58750F00BC6D30 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = F031AE502F58750F00BC6D30;
-			remoteInfo = Porche;
+			remoteInfo = Porsche;
 		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		F031AE512F58750F00BC6D30 /* Porche.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Porche.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F031AE512F58750F00BC6D30 /* Porsche.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Porsche.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F031AE6B2F58751000BC6D30 /* PorcheUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PorcheUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		F031AE842F58751000BC6D30 /* PorcheTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PorcheTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -91,7 +91,7 @@
 		F031AE522F58750F00BC6D30 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				F031AE512F58750F00BC6D30 /* Porche.app */,
+				F031AE512F58750F00BC6D30 /* Porsche.app */,
 				F031AE6B2F58751000BC6D30 /* PorcheUITests.xctest */,
 				F031AE842F58751000BC6D30 /* PorcheTests.xctest */,
 			);
@@ -101,9 +101,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		F031AE502F58750F00BC6D30 /* Porche */ = {
+		F031AE502F58750F00BC6D30 /* Porsche */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = F031AE752F58751000BC6D30 /* Build configuration list for PBXNativeTarget "Porche" */;
+			buildConfigurationList = F031AE752F58751000BC6D30 /* Build configuration list for PBXNativeTarget "Porsche" */;
 			buildPhases = (
 				F031AE4D2F58750F00BC6D30 /* Sources */,
 				F031AE4E2F58750F00BC6D30 /* Frameworks */,
@@ -116,11 +116,11 @@
 			fileSystemSynchronizedGroups = (
 				F031AE532F58750F00BC6D30 /* Porche */,
 			);
-			name = Porche;
+			name = Porsche;
 			packageProductDependencies = (
 			);
-			productName = Porche;
-			productReference = F031AE512F58750F00BC6D30 /* Porche.app */;
+			productName = Porsche;
+			productReference = F031AE512F58750F00BC6D30 /* Porsche.app */;
 			productType = "com.apple.product-type.application";
 		};
 		F031AE6A2F58751000BC6D30 /* PorcheUITests */ = {
@@ -192,7 +192,7 @@
 					};
 				};
 			};
-			buildConfigurationList = F031AE4C2F58750F00BC6D30 /* Build configuration list for PBXProject "Porche" */;
+			buildConfigurationList = F031AE4C2F58750F00BC6D30 /* Build configuration list for PBXProject "Porsche" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -206,7 +206,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				F031AE502F58750F00BC6D30 /* Porche */,
+				F031AE502F58750F00BC6D30 /* Porsche */,
 				F031AE6A2F58751000BC6D30 /* PorcheUITests */,
 				F031AE852F58751000BC6D30 /* PorcheTests */,
 			);
@@ -422,7 +422,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = TomaPrivate.Porche;
+				PRODUCT_BUNDLE_IDENTIFIER = TomaPrivate.Porsche;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -458,7 +458,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = TomaPrivate.Porche;
+				PRODUCT_BUNDLE_IDENTIFIER = TomaPrivate.Porsche;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -514,7 +514,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Porche.app/Porche";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Porsche.app/Porsche";
 			};
 			name = Debug;
 		};
@@ -532,7 +532,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Porche.app/Porche";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Porsche.app/Porsche";
 			};
 			name = Release;
 		};

@@ -1,9 +1,9 @@
 import SwiftUI
 
-// MARK: - PorcheApp
+// MARK: - PorscheApp
 
 @main
-struct PorcheApp: App {
+struct PorscheApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @StateObject private var appState = AppState()
     @StateObject private var locationManager = LocationManager()

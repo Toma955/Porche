@@ -15,8 +15,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "F031AE502F58750F00BC6D30"
-               BuildableName = "Porche.app"
-               BlueprintName = "Porche"
+               BuildableName = "Porsche.app"
+               BlueprintName = "Porsche"
                ReferencedContainer = "container:Porche.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -65,8 +65,8 @@
                <EnvironmentBuildable
                   BuildableIdentifier = "primary"
                   BlueprintIdentifier = "F031AE502F58750F00BC6D30"
-                  BuildableName = "Porche.app"
-                  BlueprintName = "Porche"
+                  BuildableName = "Porsche.app"
+                  BlueprintName = "Porsche"
                   ReferencedContainer = "container:Porche.xcodeproj">
                </EnvironmentBuildable>
             </ActionContent>
@@ -112,8 +112,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "F031AE502F58750F00BC6D30"
-            BuildableName = "Porche.app"
-            BlueprintName = "Porche"
+            BuildableName = "Porsche.app"
+            BlueprintName = "Porsche"
             ReferencedContainer = "container:Porche.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -129,8 +129,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "F031AE502F58750F00BC6D30"
-            BuildableName = "Porche.app"
-            BlueprintName = "Porche"
+            BuildableName = "Porsche.app"
+            BlueprintName = "Porsche"
             ReferencedContainer = "container:Porche.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>

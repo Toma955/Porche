@@ -1,6 +1,6 @@
 import XCTest
 import CoreLocation
-@testable import Porche
+@testable import Porsche
 
 // MARK: - PorcheUnitTests
 

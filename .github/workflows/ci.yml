@@ -20,6 +20,6 @@ jobs:
         run: |
           cd Porche
           xcodebuild test \
-            -scheme Porche \
+            -scheme Porsche \
             -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' \
             -only-testing:PorcheTests/PorcheIntegrationTests/testIntegrationAll
