@@ -13,10 +13,10 @@ final class AppState: ObservableObject {
     var focusMapOnBikeTrigger: Int = 0
     var isNavigationActive: Bool = false
     @Published var activeRoute: RouteModel?
-    @Published var batteryStatus: BatteryStatus?
+    @Published var batteryStatus: BatteryStatus? = BatteryStatus(capacityWh: 0, percent: 0, estimatedRangeKm: 0)
     @Published var assistMode: AssistMode = .eco
     @Published var navigationSpeed: Int = 0
-    @Published var navigationGear: Int = 1
+    @Published var navigationGear: Int = 12
     @Published var supportLevel: Double = 0.5
     @Published var maxTorqueNm: Double = 50
     @Published var dynamicResponse: Double = 0.3
@@ -36,12 +36,12 @@ final class AppState: ObservableObject {
     /// Battery range (km) at route start, for decreasing display as user travels.
     @Published var routeStartBatteryRangeKm: Double = 0
     @Published var isNightRidingMode: Bool = false
-    @Published var motorTempCelsius: Int? = 42
-    @Published var batteryTempCelsius: Int? = 28
-    @Published var brakeTempCelsius: Int? = 35
+    @Published var motorTempCelsius: Int? = 0
+    @Published var batteryTempCelsius: Int? = 0
+    @Published var brakeTempCelsius: Int? = 0
     @Published var isCharging: Bool = false
     @Published var minutesToFullCharge: Int? = nil
-    @Published var heartRateBPM: Int? = 72
+    @Published var heartRateBPM: Int? = 0
     @Published var rideStatistics: RideStatistics = RideStatistics()
     @Published var saveFolderPath: String = ""
     @Published var isDemoMode: Bool = false
@@ -50,8 +50,31 @@ final class AppState: ObservableObject {
     @Published var hasCompletedAppWelcome: Bool = false
     /// When true, island shows "Porche EBike spojen" during App entry sequence.
     @Published var isShowingAppWelcomeMessage: Bool = false
+    /// App otključan: prikazan je 3D bicikl i "Porche Ebike" (nakon dovršenog welcomea).
+    @Published var isAppUnlocked: Bool = false
+    /// Vožnja krenula: korisnik je ušao u način vožnje (karta/ride).
+    @Published var isRideStarted: Bool = false
+    /// Koristi se navigacija: vožnja je aktivna s aktivnom rutom.
+    @Published var isNavigationInUse: Bool = false
     var demoSimulationTask: Task<Void, Never>?
     private let devMessagesMaxCount = 100
+
+    // Gear mode (pill): omjer 1/3 i 0/12, mod AUTO ili OFF
+    @Published var gearModeSmallValue: Int = 1
+    @Published var isAutoGearOn: Bool = false
+
+    // Charging indicator: motor % (0–100), baterija % (0–20)
+    @Published var chargingMotorPercent: Double = 0
+    @Published var chargingBatteryPercent: Double = 0
+
+    // Trip: početak vožnje za brojač 0:00:00 i kcal
+    @Published var tripStartedAt: Date?
+
+    // Vremenska prognoza (defaultna postavka)
+    @Published var weatherLocationName: String = "Zagreb"
+    @Published var weatherCondition: String = "Oblačno"
+    @Published var weatherRainInMinutes: Int? = 15
+    @Published var weatherTemperatureCelsius: Int = 15
 
     func addDevMessage(category: DevMessageCategory, _ text: String) {
         let entry = DevMessage(category: category, text: text, date: Date())

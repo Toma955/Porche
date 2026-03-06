@@ -150,15 +150,18 @@ struct PorcheIslandView: View {
     private var hasRouteDestinations: Bool { !routeOrigin.isEmpty || !routeDestination.isEmpty }
     private var isRideMapActive: Bool { appState.isRouteActive }
     private var navSpeed: Int { min(99, max(0, appState.navigationSpeed)) }
-    private var navGear: Int { min(99, max(0, appState.navigationGear)) }
+    private var navGear: Int { min(12, max(0, appState.navigationGear)) }
     private let maxGear: Int = 12
-    private var gearRatioText: String { "\(min(maxGear, max(1, navGear)))/\(maxGear)" }
-    private var batteryPercent: Int { appState.batteryStatus?.percent ?? 100 }
-    private var batteryRangeKm: Double { appState.batteryStatus?.estimatedRangeKm ?? 99 }
+    private var gearRatioText: String { "\(navGear)/\(maxGear)" }
+    private var batteryPercent: Int { appState.batteryStatus?.percent ?? 0 }
+    private var batteryRangeKm: Double { appState.batteryStatus?.estimatedRangeKm ?? 0 }
     private var hasActiveRoute: Bool { (appState.activeRoute?.waypoints.isEmpty ?? true) == false }
+    /// Kad je app otključan: 2 stranice. Slobodna vožnja: 7 stranica. Vožnja s GPS-om: iste 7 + 1 GPS element = 8 stranica (bez duplikata).
     private var pillPageCount: Int {
+        if !isRideMapActive, appState.isAppUnlocked { return 2 }
         if !isRideMapActive { return 1 }
-        if hasActiveRoute { return 3 }
+        if hasActiveRoute { return 8 }
+        if isRideMapActive { return 7 }
         return 1
     }
     private var pillDefaultPageIndex: Int { 0 }
@@ -411,7 +414,7 @@ struct PorcheIslandView: View {
             }
         }
         .padding(.vertical, isExpanded ? 14 : 0)
-        .padding(.horizontal, isExpanded ? iconRowGap : 20)
+        .padding(.horizontal, isExpanded ? iconRowGap : (pillPageCount >= 2 ? 0 : 20))
     }
 
     private var appWelcomeMessageRow: some View {
@@ -434,6 +437,7 @@ struct PorcheIslandView: View {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     withAnimation(islandSpring) {
                         appState.hasCompletedAppWelcome = true
+                        appState.isAppUnlocked = true
                     }
                 }
                 DispatchQueue.main.asyncAfter(deadline: .now() + 2.6) {
@@ -457,6 +461,7 @@ struct PorcheIslandView: View {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
                     withAnimation(islandSpring) {
                         appState.hasCompletedAppWelcome = true
+                        appState.isAppUnlocked = true
                     }
                 }
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.8) {
@@ -484,67 +489,454 @@ struct PorcheIslandView: View {
     }
     private let minPillContentWidth: CGFloat = 280
     private var swipeablePillContent: some View {
-        GeometryReader { geo in
-            let w = max(geo.size.width, minPillContentWidth)
-            HStack(spacing: 0) {
-                ForEach(0..<pillPageCount, id: \.self) { index in
-                    pillPageView(index: index)
-                        .frame(width: w, height: collapsedHeight)
-                        .clipped()
-                        .id(index)
-                }
-            }
-            .frame(width: CGFloat(pillPageCount) * w, height: collapsedHeight, alignment: .leading)
-            .offset(x: -CGFloat(pillPageIndex) * w + pillDragOffset)
-            .animation(.interactiveSpring(response: 0.3, dampingFraction: 0.85), value: pillPageIndex)
-            .frame(width: w, height: collapsedHeight)
-            .clipped()
-            .contentShape(Rectangle())
-            .onTapGesture {
-                withAnimation(islandSpring) {
-                    if !appState.hasCompletedAppWelcome {
-                        showAppDevChoice = true
+        Group {
+            if pillPageCount >= 2 {
+                TabView(selection: $pillPageIndex) {
+                    ForEach(0..<pillPageCount, id: \.self) { index in
+                        pillPillContent(at: index, pageWidth: islandWidth)
+                            .frame(maxWidth: .infinity)
+                            .offset(y: 6)
+                            .tag(index)
                     }
-                    island.state = .actions
+                }
+                .tabViewStyle(.page(indexDisplayMode: .never))
+                .frame(width: islandWidth, height: collapsedHeight)
+                .onTapGesture {
+                    withAnimation(islandSpring) {
+                        if !appState.hasCompletedAppWelcome { showAppDevChoice = true }
+                        island.state = .actions
+                    }
+                }
+            } else {
+                GeometryReader { geo in
+                    pillPillContent(at: 0, pageWidth: geo.size.width)
+                        .frame(width: geo.size.width, height: collapsedHeight)
+                        .offset(y: 6)
+                }
+                .frame(height: collapsedHeight)
+                .onTapGesture {
+                    withAnimation(islandSpring) {
+                        if !appState.hasCompletedAppWelcome { showAppDevChoice = true }
+                        island.state = .actions
+                    }
                 }
             }
         }
-        .frame(height: collapsedHeight)
-        .padding(.horizontal, 20)
-        .onChange(of: isRideMapActive) { _, _ in pillPageIndex = pillDefaultPageIndex; pillDragOffset = 0 }
+        .frame(width: pillPageCount >= 2 ? islandWidth : nil, height: collapsedHeight)
+        .padding(.horizontal, pillPageCount >= 2 ? 0 : 20)
+        .onChange(of: isRideMapActive) { _, active in
+            pillPageIndex = pillDefaultPageIndex
+            pillDragOffset = 0
+            if active { appState.tripStartedAt = Date() }
+            if !active { appState.tripStartedAt = nil }
+        }
         .onChange(of: hasActiveRoute) { _, _ in pillPageIndex = pillDefaultPageIndex }
+        .onChange(of: appState.isAppUnlocked) { _, _ in pillPageIndex = pillDefaultPageIndex; pillDragOffset = 0 }
         .onChange(of: island.state) { _, newState in
             if newState == .compact { pillPageIndex = pillDefaultPageIndex; pillDragOffset = 0 }
         }
         .onAppear { pillPageIndex = pillDefaultPageIndex; pillDragOffset = 0 }
     }
     @ViewBuilder
-    private func pillPageView(index: Int) -> some View {
-        if !isRideMapActive {
-            pillDefaultPorche
-        } else if hasActiveRoute {
-            switch index {
-            case 0: pillRideStatsView
-            case 1: pillNavCountdownView
-            case 2: pillDistanceAtoBView
-            default: pillRideStatsView
+    private func pillPillContent(at index: Int, pageWidth w: CGFloat) -> some View {
+        Group {
+            if !isRideMapActive, appState.isAppUnlocked {
+                switch index {
+                case 0: pillElementPorcheEbike
+                case 1: pillElementBaterija
+                default: pillElementPorcheEbike
+                }
+            } else if !isRideMapActive {
+                pillElementPorcheEbike
+            } else if hasActiveRoute {
+                switch index {
+                case 0: pillElementVožnjaStats
+                case 1: pillElementBaterija
+                case 2: pillElementGearMode
+                case 3: pillElementChargingMode
+                case 4: pillElementTemperatureMode
+                case 5: pillElementTripMode
+                case 6: pillElementHeartbeatMode
+                case 7: pillElementGpsUpute
+                default: pillElementVožnjaStats
+                }
+            } else {
+                switch index {
+                case 0: pillElementVožnjaStats
+                case 1: pillElementBaterija
+                case 2: pillElementGearMode
+                case 3: pillElementChargingMode
+                case 4: pillElementTemperatureMode
+                case 5: pillElementTripMode
+                case 6: pillElementHeartbeatMode
+                default: pillElementVožnjaStats
+                }
             }
-        } else {
-            pillRideStatsView
         }
+        .frame(width: w, height: collapsedHeight)
+        .clipped()
+        .id(index)
     }
-    private var pillDefaultPorche: some View {
-        VStack(spacing: 6) {
-            Text(appState.hasCompletedAppWelcome ? "Porche Ebike" : "Porche")
-                .font(AppTypography.headline)
-                .foregroundStyle(islandColors.titleGradient)
-            if appState.isDemoMode {
-                devMessagesStrip
+
+    /// Element 1: natpis Porche Ebike. Swipe ga makne i donese element s baterijom. Centriran u cijelom islandu.
+    private var pillElementPorcheEbike: some View {
+        ZStack {
+            VStack(alignment: .center, spacing: 6) {
+                Text(appState.hasCompletedAppWelcome ? "Porche Ebike" : "Porche")
+                    .font(AppTypography.headline)
+                    .foregroundStyle(islandColors.titleGradient)
+                    .multilineTextAlignment(.center)
+                if appState.isDemoMode {
+                    devMessagesStrip
+                }
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .frame(maxWidth: .infinity)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .frame(minHeight: collapsedHeight)
         .padding(.vertical, appState.isDemoMode && !appState.devMessages.isEmpty ? 8 : 0)
+    }
+
+    /// Element 2: baterija za punjenje. Swipe ga makne i donese natpis Porche Ebike. Stanje baterije iz globalne varijable.
+    private var pillElementBaterija: some View {
+        let green = islandColors.accentGreen
+        return ZStack {
+            HStack(spacing: 16) {
+                HStack(spacing: 6) {
+                    Image(systemName: batteryIconName)
+                        .font(.system(size: 20, weight: .medium))
+                        .foregroundStyle(green)
+                    Text("\(batteryPercent) %")
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(green)
+                }
+                HStack(spacing: 6) {
+                    Image(systemName: "thermometer.medium")
+                        .font(.system(size: 18, weight: .medium))
+                        .foregroundStyle(green)
+                    Text("\(appState.motorTempCelsius ?? 0) °C")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(green)
+                }
+                HStack(spacing: 6) {
+                    Image(systemName: "powerplug.fill")
+                        .font(.system(size: 18, weight: .medium))
+                        .foregroundStyle(green)
+                    Text("0:00 min")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(green)
+                }
+            }
+            .frame(maxWidth: .infinity)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(minHeight: collapsedHeight)
+    }
+
+    /// Drive mode bez GPS: Gear mode – omjeri 1/3 i 12/12, okrugli gumbi osim AUTO.
+    private var pillElementGearMode: some View {
+        let green = islandColors.accentGreen
+        return ZStack {
+            HStack(spacing: 10) {
+                Button {
+                    appState.navigationGear = min(maxGear, max(0, appState.navigationGear + 1))
+                } label: {
+                    Image(systemName: "chevron.up")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(.black)
+                        .frame(width: 32, height: 32)
+                        .background(Color.white, in: Circle())
+                }
+                .buttonStyle(.plain)
+                Text("\(appState.navigationGear)/\(maxGear)")
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundStyle(.white)
+                    .frame(minWidth: 40)
+                Button {
+                    appState.navigationGear = min(maxGear, max(0, appState.navigationGear - 1))
+                } label: {
+                    Image(systemName: "chevron.down")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(.black)
+                        .frame(width: 32, height: 32)
+                        .background(Color.white, in: Circle())
+                }
+                .buttonStyle(.plain)
+                Button {
+                    appState.isAutoGearOn.toggle()
+                } label: {
+                    Text(appState.isAutoGearOn ? "AUTO" : "OFF")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundStyle(appState.isAutoGearOn ? .white : .red)
+                        .frame(width: 48, height: 36)
+                        .background(appState.isAutoGearOn ? green : Color.white.opacity(0.2), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                }
+                .buttonStyle(.plain)
+                Button {
+                    appState.gearModeSmallValue = min(3, max(0, appState.gearModeSmallValue - 1))
+                } label: {
+                    Image(systemName: "chevron.down")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(.black)
+                        .frame(width: 28, height: 28)
+                        .background(Color.white, in: Circle())
+                }
+                .buttonStyle(.plain)
+                Text("\(appState.gearModeSmallValue)/3")
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundStyle(.white)
+                    .frame(minWidth: 28)
+                Button {
+                    appState.gearModeSmallValue = min(3, max(0, appState.gearModeSmallValue + 1))
+                } label: {
+                    Image(systemName: "chevron.up")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(.black)
+                        .frame(width: 28, height: 28)
+                        .background(Color.white, in: Circle())
+                }
+                .buttonStyle(.plain)
+            }
+            .frame(maxWidth: .infinity)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(minHeight: collapsedHeight)
+    }
+
+    /// Drive mode bez GPS: Charging mode – indikator punjenja/pražnjenja: motor (crveno), 0%, baterija (zeleno).
+    private var pillElementChargingMode: some View {
+        let green = islandColors.accentGreen
+        let barHeight: CGFloat = 10
+        let trackColor = Color.white.opacity(0.2)
+        return ZStack {
+            HStack(spacing: 10) {
+                AppIcons.imagePart(.engine)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 22, height: 22)
+                    .foregroundStyle(islandColors.title)
+                GeometryReader { geo in
+                    let w = geo.size.width
+                    let centerW: CGFloat = 38
+                    let half = max(0, (w - centerW) / 2)
+                    let redW = half * CGFloat(appState.chargingMotorPercent / 100)
+                    let greenW = half * CGFloat(appState.chargingBatteryPercent / 20)
+                    ZStack(alignment: .leading) {
+                        RoundedRectangle(cornerRadius: barHeight / 2, style: .continuous)
+                            .fill(trackColor)
+                            .frame(height: barHeight)
+                        HStack(spacing: 0) {
+                            HStack(spacing: 0) {
+                                Spacer(minLength: 0)
+                                RoundedRectangle(cornerRadius: barHeight / 2, style: .continuous)
+                                    .fill(Color.red)
+                                    .frame(width: max(0, redW), height: barHeight)
+                            }
+                            .frame(width: half)
+                            Text("0%")
+                                .font(.system(size: 13, weight: .bold))
+                                .foregroundStyle(.white)
+                                .frame(width: centerW)
+                            HStack(spacing: 0) {
+                                RoundedRectangle(cornerRadius: barHeight / 2, style: .continuous)
+                                    .fill(green)
+                                    .frame(width: max(0, greenW), height: barHeight)
+                                Spacer(minLength: 0)
+                            }
+                            .frame(width: half)
+                        }
+                        .frame(height: barHeight)
+                    }
+                }
+                .frame(height: barHeight)
+                AppIcons.imagePart(.batery)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 22, height: 22)
+                    .foregroundStyle(islandColors.title)
+            }
+            .padding(.horizontal, 14)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(minHeight: collapsedHeight)
+    }
+
+    /// Drive mode bez GPS: Temperature – motor, baterija, kočnice (0 °C default).
+    private var pillElementTemperatureMode: some View {
+        ZStack {
+            HStack(spacing: 20) {
+                VStack(spacing: 4) {
+                    AppIcons.imagePart(.engine)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 28, height: 28)
+                        .foregroundStyle(islandColors.title)
+                    Text("\(appState.motorTempCelsius ?? 0) °C")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(islandColors.title)
+                }
+                .frame(maxWidth: .infinity)
+                VStack(spacing: 4) {
+                    AppIcons.imagePart(.batery)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 28, height: 28)
+                        .foregroundStyle(islandColors.title)
+                    Text("\(appState.batteryTempCelsius ?? 0) °C")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(islandColors.title)
+                }
+                .frame(maxWidth: .infinity)
+                VStack(spacing: 4) {
+                    AppIcons.imagePart(.brake)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 28, height: 28)
+                        .foregroundStyle(islandColors.title)
+                    Text("\(appState.brakeTempCelsius ?? 0) °C")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(islandColors.title)
+                }
+                .frame(maxWidth: .infinity)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(minHeight: collapsedHeight)
+    }
+
+    /// Drive mode bez GPS: Trip – vrijeme i kalorije u jednoj liniji; kad krene vožnja kreče brojenje.
+    private var pillElementTripMode: some View {
+        ZStack {
+            TimelineView(.periodic(from: .now, by: 1.0)) { _ in
+                HStack(spacing: 16) {
+                    Text(tripElapsedForDisplay)
+                        .font(.system(size: 20, weight: .bold, design: .monospaced))
+                        .foregroundStyle(.white)
+                    Text("\(tripCaloriesForDisplay) kcal")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(islandColors.title)
+                }
+                .frame(maxWidth: .infinity)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(minHeight: collapsedHeight)
+    }
+
+    private var tripElapsedForDisplay: String {
+        let start = appState.tripStartedAt ?? Date()
+        let sec = isRideMapActive ? Date().timeIntervalSince(start) : 0
+        let h = Int(sec) / 3600
+        let m = (Int(sec) % 3600) / 60
+        let s = Int(sec) % 60
+        return String(format: "%d:%02d:%02d", h, m, s)
+    }
+
+    private var tripCaloriesForDisplay: Int {
+        let start = appState.tripStartedAt ?? Date()
+        let sec = isRideMapActive ? Date().timeIntervalSince(start) : 0
+        let minutes = sec / 60
+        return Int(minutes * 6)
+    }
+
+    /// Drive mode bez GPS: Heartbeat – srce i EKG, 0 BPM, bez animacije.
+    private var pillElementHeartbeatMode: some View {
+        let bpm = appState.heartRateBPM ?? 0
+        return ZStack {
+            HStack(spacing: 12) {
+                Image(systemName: "heart.fill")
+                    .font(.system(size: 28))
+                    .foregroundStyle(.red)
+                heartPulsePath
+                    .stroke(Color.red, style: StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
+                    .frame(width: 80, height: 28)
+                Text("\(bpm)")
+                    .font(.system(size: 22, weight: .bold))
+                    .foregroundStyle(.red)
+                Text("BPM")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(.red)
+            }
+            .frame(maxWidth: .infinity)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(minHeight: collapsedHeight)
+    }
+
+    private var heartPulsePath: Path {
+        var p = Path()
+        let w: CGFloat = 80
+        let h: CGFloat = 24
+        p.move(to: CGPoint(x: 0, y: h / 2))
+        p.addLine(to: CGPoint(x: w * 0.2, y: h / 2))
+        p.addLine(to: CGPoint(x: w * 0.3, y: h * 0.2))
+        p.addLine(to: CGPoint(x: w * 0.4, y: h * 0.8))
+        p.addLine(to: CGPoint(x: w * 0.5, y: h / 2))
+        p.addLine(to: CGPoint(x: w * 0.6, y: h / 2))
+        p.addLine(to: CGPoint(x: w * 0.7, y: h * 0.3))
+        p.addLine(to: CGPoint(x: w * 0.8, y: h * 0.7))
+        p.addLine(to: CGPoint(x: w, y: h / 2))
+        return p
+    }
+
+    /// Drive mode bez GPS: Weather – globalni podaci: weatherLocationName, weatherCondition, weatherRainInMinutes, weatherTemperatureCelsius.
+    private var pillElementWeatherMode: some View {
+        let rainText = appState.weatherRainInMinutes.map { "Kiša za \($0) min" } ?? ""
+        return ZStack {
+            HStack(spacing: 14) {
+                Image(systemName: "cloud.rain.fill")
+                    .font(.system(size: 28))
+                    .foregroundStyle(islandColors.title)
+                VStack(spacing: 2) {
+                    Text(appState.weatherLocationName)
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(islandColors.title)
+                    Text(appState.weatherCondition)
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(islandColors.secondary)
+                    if !rainText.isEmpty {
+                        Text(rainText)
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundStyle(islandColors.accentGreen)
+                    }
+                }
+                .frame(maxWidth: .infinity)
+                Text("\(appState.weatherTemperatureCelsius) °C")
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundStyle(islandColors.title)
+            }
+            .padding(.horizontal, 16)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(minHeight: collapsedHeight)
+    }
+
+    private func pillPlaceholderElement(title: String, icon: String) -> some View {
+        ZStack {
+            VStack(spacing: 6) {
+                Image(systemName: icon)
+                    .font(.system(size: 24, weight: .medium))
+                    .foregroundStyle(islandColors.accentGreen)
+                Text(title)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(islandColors.title)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(minHeight: collapsedHeight)
+    }
+
+    private var batteryIconName: String {
+        let p = batteryPercent
+        if p >= 95 { return "battery.100percent" }
+        if p >= 75 { return "battery.75percent" }
+        if p >= 50 { return "battery.50percent" }
+        if p >= 25 { return "battery.25percent" }
+        return "battery.0percent"
     }
 
     private var devMessagesStrip: some View {
@@ -638,6 +1030,66 @@ struct PorcheIslandView: View {
         .frame(height: collapsedHeight)
         .padding(.horizontal, rideModeStatsHorizontalPadding)
     }
+
+    /// Element vožnje bez navigacije: km/h, prijenos 1/12, baterija %, domet – u jednom elementu, druga stranica za swipe je baterija.
+    private var pillElementVožnjaStats: some View {
+        ZStack {
+            HStack(spacing: rideModeStatsRowSpacing) {
+                rideModeCompactCell(value: "\(navSpeed)", label: "km/h")
+                rideModeCompactCell(value: gearRatioText, label: "Prijenos")
+                rideModeCompactCell(value: "\(batteryPercent)", label: "Baterija")
+                rideModeCompactCell(value: String(format: "%.0f", batteryRangeKm), label: "Domet")
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, rideModeStatsHorizontalPadding)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(minHeight: collapsedHeight)
+    }
+    /// Jedan GPS element kad je destinacija-do-destinacije: upute + Za X m + preostalo/ukupno.
+    private var pillElementGpsUpute: some View {
+        let (meters, instruction) = navCountdownToNextTurn
+        let (total, remaining) = routeDistanceAtoB
+        let instr = instruction ?? "Slijedite rutu"
+        return ZStack {
+            VStack(spacing: 6) {
+                Image(systemName: navTurnIcon(instr))
+                    .font(.system(size: 24))
+                    .foregroundStyle(islandColors.accentGreen)
+                Text(instr)
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(islandColors.title)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2)
+                Text(meters >= 0 ? "Za \(Int(meters)) m" : "—")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(islandColors.secondary)
+                HStack(spacing: 14) {
+                    VStack(spacing: 2) {
+                        Text("\(Int(remaining / 1000)) km")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(islandColors.title)
+                        Text("Preostalo")
+                            .font(.system(size: 10, weight: .medium))
+                            .foregroundStyle(islandColors.secondary)
+                    }
+                    VStack(spacing: 2) {
+                        Text("\(Int(total / 1000)) km")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(islandColors.secondary)
+                        Text("Ukupno")
+                            .font(.system(size: 10, weight: .medium))
+                            .foregroundStyle(islandColors.secondary)
+                    }
+                }
+            }
+            .padding(.horizontal, 12)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(minHeight: collapsedHeight)
+    }
+
     private var pillNavCountdownView: some View {
         let (meters, instruction) = navCountdownToNextTurn
         return VStack(spacing: 6) {

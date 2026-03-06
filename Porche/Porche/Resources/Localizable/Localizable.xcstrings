@@ -10,6 +10,9 @@
     "[%@]" : {
 
     },
+    "%lld" : {
+
+    },
     "%lld / %lld" : {
       "localizations" : {
         "en" : {
@@ -23,13 +26,32 @@
     "%lld %%" : {
 
     },
+    "%lld °C" : {
+
+    },
     "%lld BPM" : {
+
+    },
+    "%lld kcal" : {
 
     },
     "%lld km" : {
 
     },
     "%lld Nm" : {
+
+    },
+    "%lld/%lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld/%2$lld"
+          }
+        }
+      }
+    },
+    "%lld/3" : {
 
     },
     "%lld%%" : {
@@ -39,6 +61,12 @@
 
     },
     "▼" : {
+
+    },
+    "0:00 min" : {
+
+    },
+    "0%" : {
 
     },
     "2D" : {
@@ -85,6 +113,9 @@
     "Audio" : {
 
     },
+    "AUTO" : {
+
+    },
     "Basic info" : {
 
     },
@@ -92,6 +123,9 @@
 
     },
     "Battery" : {
+
+    },
+    "BPM" : {
 
     },
     "Charging" : {
@@ -188,6 +222,9 @@
 
     },
     "Notifications" : {
+
+    },
+    "OFF" : {
 
     },
     "Otkucaj srca" : {

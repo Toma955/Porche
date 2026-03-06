@@ -31,6 +31,7 @@ struct ContentView: View {
             onFindMe: {
                 appState.isFindMeMode = true
                 appState.isRouteActive = true
+                appState.isRideStarted = true
                 appState.focusMapOnUserLocationTrigger += 1
                 locationManager.requestWhenInUseAuthorization()
                 locationManager.requestLocation()
@@ -38,13 +39,17 @@ struct ContentView: View {
             },
             onCancelFindMe: {
                 appState.isRouteActive = false
+                appState.isRideStarted = false
+                appState.isNavigationInUse = false
                 appState.activeRoute = nil
                 appState.routeProgressAlongLine = 0
             },
             onPokreniNavigaciju: { withNavigation, origin, destination in
                 appState.isRouteActive = true
+                appState.isRideStarted = true
                 if withNavigation, !origin.isEmpty, !destination.isEmpty {
                     appState.isNavigationActive = true
+                    appState.isNavigationInUse = true
                     if appState.isDemoMode {
                         Task { @MainActor in
                             guard let route = await RoutePlanningService.planRoute(
@@ -74,6 +79,7 @@ struct ContentView: View {
                         }
                     }
                 } else {
+                    appState.isNavigationInUse = false
                     appState.isFindMeMode = true
                     appState.focusMapOnUserLocationTrigger += 1
                     locationManager.requestWhenInUseAuthorization()
@@ -85,6 +91,8 @@ struct ContentView: View {
                 appState.demoSimulationTask?.cancel()
                 appState.demoSimulationTask = nil
                 appState.isRouteActive = false
+                appState.isRideStarted = false
+                appState.isNavigationInUse = false
                 appState.activeRoute = nil
                 appState.routeProgressAlongLine = 0
                 appState.isNavigationActive = false
