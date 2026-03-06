@@ -90,6 +90,8 @@ struct ContentView: View {
             onExitRide: {
                 appState.demoSimulationTask?.cancel()
                 appState.demoSimulationTask = nil
+                appState.motorConsumptionWatts = nil
+                appState.rideStatistics = RideStatistics()
                 appState.isRouteActive = false
                 appState.isRideStarted = false
                 appState.isNavigationInUse = false

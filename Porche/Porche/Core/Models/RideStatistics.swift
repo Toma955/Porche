@@ -1,10 +1,10 @@
 import Foundation
 struct LiveDashboardStats {
     var speedKmh: Double = 0
-    var batteryPercent: Int = 100
-    var rangeKm: Double = 99
-    var assistModeTitle: String = "Eco"
-    var gearCurrent: Int = 1
+    var batteryPercent: Int = 0
+    var rangeKm: Double = 0
+    var assistModeTitle: String = ""
+    var gearCurrent: Int = 0
     var gearMax: Int = 12
     var distanceThisRideKm: Double = 0
     var rideDurationMinutes: Int = 0
@@ -31,13 +31,13 @@ struct DiagnosticsStats {
     var batteryTempC: Double = 0
     var tirePressureFrontBar: Double = 0
     var tirePressureRearBar: Double = 0
-    var batterySohPercent: Int = 100
+    var batterySohPercent: Int = 0
     var chargeCycles: Int = 0
     var kmUntilService: Double = 0
 }
 struct HistoryStats {
     var odometerKm: Double = 0
-    var weeklyGoalKm: Double = 150
+    var weeklyGoalKm: Double = 0
     var weeklyDoneKm: Double = 0
     var co2SavedKg: Double = 0
     var caloriesBurned: Int = 0

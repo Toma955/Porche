@@ -60,8 +60,18 @@ enum DemoRideSimulation {
             appState.routeProgressAlongLine = 0
             appState.navigationSpeed = 18
             appState.navigationGear = 4
-            let startBatteryPercent = appState.batteryStatus?.percent ?? 100
-            let startRangeKm = appState.batteryStatus?.estimatedRangeKm ?? 50
+            appState.batteryStatus = BatteryStatus(capacityWh: 500, percent: 100, estimatedRangeKm: 99)
+            appState.heartRateBPM = 90
+            appState.weatherLocationName = "Zagreb"
+            appState.weatherCondition = "Oblačno"
+            appState.weatherTemperatureCelsius = 12
+            appState.weatherRainInMinutes = 35
+            appState.motorTempCelsius = 15
+            appState.batteryTempCelsius = 15
+            appState.brakeTempCelsius = 15
+            appState.motorConsumptionWatts = -38
+            appState.tripStartedAt = Date()
+            appState.rideStatistics = RideStatistics.placeholder
 
             for tick in 0..<totalTicks {
                 if Task.isCancelled { break }
@@ -71,11 +81,13 @@ enum DemoRideSimulation {
                     appState.navigationSpeed = 16 + Int(progress * 10) + (tick % 5) - 2
                     appState.navigationSpeed = min(28, max(12, appState.navigationSpeed))
                     appState.navigationGear = 3 + Int(progress * 4.5)
-                    appState.navigationGear = min(8, max(2, appState.navigationGear))
-                    let batteryDrop = Int(progress * Double(100 - startBatteryPercent + 8))
-                    let percent = max(0, startBatteryPercent - batteryDrop)
-                    let rangeKm = max(5, startRangeKm * Double(percent) / Double(max(1, startBatteryPercent)))
+                    appState.navigationGear = min(12, max(1, appState.navigationGear))
+                    let percent = max(5, 100 - Int(progress * 45))
+                    let rangeKm = max(5, 99.0 * Double(percent) / 100.0)
                     appState.batteryStatus = BatteryStatus(capacityWh: 500, percent: percent, estimatedRangeKm: rangeKm)
+                    appState.batteryTempCelsius = 15 + Int(progress * 8)
+                    appState.minutesToFullCharge = Int(progress * 35)
+                    appState.motorConsumptionWatts = -38 + (tick % 7)
                 }
                 try? await Task.sleep(nanoseconds: tickIntervalNanoseconds)
             }

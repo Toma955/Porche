@@ -156,7 +156,6 @@ struct PorcheIslandView: View {
     private var batteryPercent: Int { appState.batteryStatus?.percent ?? 0 }
     private var batteryRangeKm: Double { appState.batteryStatus?.estimatedRangeKm ?? 0 }
     private var hasActiveRoute: Bool { (appState.activeRoute?.waypoints.isEmpty ?? true) == false }
-    /// Kad je app otključan: 2 stranice. Slobodna vožnja: 7 stranica. Vožnja s GPS-om: iste 7 + 1 GPS element = 8 stranica (bez duplikata).
     private var pillPageCount: Int {
         if !isRideMapActive, appState.isAppUnlocked { return 2 }
         if !isRideMapActive { return 1 }
@@ -296,17 +295,19 @@ struct PorcheIslandView: View {
                     if island.state != .compact { showButtonsContent = true }
                 }
             } else {
-                showAppDevChoice = false
-                resetExpandedState()
+                DispatchQueue.main.async {
+                    showAppDevChoice = false
+                    resetExpandedState()
+                }
             }
         }
         .onChange(of: island.requestClose) { _, requested in
             guard requested else { return }
-            withAnimation(islandSpring) {
+            withAnimation(islandSpring) { island.state = .compact }
+            DispatchQueue.main.async {
                 resetExpandedState()
-                island.state = .compact
+                island.requestClose = false
             }
-            DispatchQueue.main.async { island.requestClose = false }
         }
         .onChange(of: appState.activeRoute) { _, newRoute in
             if let route = newRoute, !route.steps.isEmpty {
@@ -533,7 +534,12 @@ struct PorcheIslandView: View {
         .onChange(of: hasActiveRoute) { _, _ in pillPageIndex = pillDefaultPageIndex }
         .onChange(of: appState.isAppUnlocked) { _, _ in pillPageIndex = pillDefaultPageIndex; pillDragOffset = 0 }
         .onChange(of: island.state) { _, newState in
-            if newState == .compact { pillPageIndex = pillDefaultPageIndex; pillDragOffset = 0 }
+            if newState == .compact {
+                DispatchQueue.main.async {
+                    pillPageIndex = pillDefaultPageIndex
+                    pillDragOffset = 0
+                }
+            }
         }
         .onAppear { pillPageIndex = pillDefaultPageIndex; pillDragOffset = 0 }
     }
@@ -578,7 +584,6 @@ struct PorcheIslandView: View {
         .id(index)
     }
 
-    /// Element 1: natpis Porche Ebike. Swipe ga makne i donese element s baterijom. Centriran u cijelom islandu.
     private var pillElementPorcheEbike: some View {
         ZStack {
             VStack(alignment: .center, spacing: 6) {
@@ -597,7 +602,6 @@ struct PorcheIslandView: View {
         .padding(.vertical, appState.isDemoMode && !appState.devMessages.isEmpty ? 8 : 0)
     }
 
-    /// Element 2: baterija za punjenje. Swipe ga makne i donese natpis Porche Ebike. Stanje baterije iz globalne varijable.
     private var pillElementBaterija: some View {
         let green = islandColors.accentGreen
         return ZStack {
@@ -633,7 +637,6 @@ struct PorcheIslandView: View {
         .frame(minHeight: collapsedHeight)
     }
 
-    /// Drive mode bez GPS: Gear mode – omjeri 1/3 i 12/12, okrugli gumbi osim AUTO.
     private var pillElementGearMode: some View {
         let green = islandColors.accentGreen
         return ZStack {
@@ -703,11 +706,14 @@ struct PorcheIslandView: View {
         .frame(minHeight: collapsedHeight)
     }
 
-    /// Drive mode bez GPS: Charging mode – indikator punjenja/pražnjenja: motor (crveno), 0%, baterija (zeleno).
     private var pillElementChargingMode: some View {
         let green = islandColors.accentGreen
         let barHeight: CGFloat = 10
         let trackColor = Color.white.opacity(0.2)
+        let consumption = appState.motorConsumptionWatts ?? 0
+        let consumptionAbs = min(50, abs(consumption))
+        let redFraction = consumption != 0 ? CGFloat(consumptionAbs) / 50.0 : CGFloat(appState.chargingMotorPercent / 100)
+        let centerText = consumption != 0 ? "\(consumption) W" : "0%"
         return ZStack {
             HStack(spacing: 10) {
                 AppIcons.imagePart(.engine)
@@ -717,9 +723,9 @@ struct PorcheIslandView: View {
                     .foregroundStyle(islandColors.title)
                 GeometryReader { geo in
                     let w = geo.size.width
-                    let centerW: CGFloat = 38
+                    let centerW: CGFloat = 44
                     let half = max(0, (w - centerW) / 2)
-                    let redW = half * CGFloat(appState.chargingMotorPercent / 100)
+                    let redW = half * redFraction
                     let greenW = half * CGFloat(appState.chargingBatteryPercent / 20)
                     ZStack(alignment: .leading) {
                         RoundedRectangle(cornerRadius: barHeight / 2, style: .continuous)
@@ -733,9 +739,11 @@ struct PorcheIslandView: View {
                                     .frame(width: max(0, redW), height: barHeight)
                             }
                             .frame(width: half)
-                            Text("0%")
-                                .font(.system(size: 13, weight: .bold))
-                                .foregroundStyle(.white)
+                            Text(centerText)
+                                .font(.system(size: 11, weight: .bold))
+                                .foregroundStyle(consumption != 0 ? .red : .white)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.8)
                                 .frame(width: centerW)
                             HStack(spacing: 0) {
                                 RoundedRectangle(cornerRadius: barHeight / 2, style: .continuous)
@@ -762,7 +770,6 @@ struct PorcheIslandView: View {
         .frame(minHeight: collapsedHeight)
     }
 
-    /// Drive mode bez GPS: Temperature – motor, baterija, kočnice (0 °C default).
     private var pillElementTemperatureMode: some View {
         ZStack {
             HStack(spacing: 20) {
@@ -806,7 +813,6 @@ struct PorcheIslandView: View {
         .frame(minHeight: collapsedHeight)
     }
 
-    /// Drive mode bez GPS: Trip – vrijeme i kalorije u jednoj liniji; kad krene vožnja kreče brojenje.
     private var pillElementTripMode: some View {
         ZStack {
             TimelineView(.periodic(from: .now, by: 1.0)) { _ in
@@ -841,7 +847,6 @@ struct PorcheIslandView: View {
         return Int(minutes * 6)
     }
 
-    /// Drive mode bez GPS: Heartbeat – srce i EKG, 0 BPM, bez animacije.
     private var pillElementHeartbeatMode: some View {
         let bpm = appState.heartRateBPM ?? 0
         return ZStack {
@@ -881,7 +886,6 @@ struct PorcheIslandView: View {
         return p
     }
 
-    /// Drive mode bez GPS: Weather – globalni podaci: weatherLocationName, weatherCondition, weatherRainInMinutes, weatherTemperatureCelsius.
     private var pillElementWeatherMode: some View {
         let rainText = appState.weatherRainInMinutes.map { "Kiša za \($0) min" } ?? ""
         return ZStack {
@@ -1031,7 +1035,6 @@ struct PorcheIslandView: View {
         .padding(.horizontal, rideModeStatsHorizontalPadding)
     }
 
-    /// Element vožnje bez navigacije: km/h, prijenos 1/12, baterija %, domet – u jednom elementu, druga stranica za swipe je baterija.
     private var pillElementVožnjaStats: some View {
         ZStack {
             HStack(spacing: rideModeStatsRowSpacing) {
@@ -1046,26 +1049,44 @@ struct PorcheIslandView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .frame(minHeight: collapsedHeight)
     }
-    /// Jedan GPS element: ikona lijevo, natpis i odbrojavanje u sredini.
     private var pillElementGpsUpute: some View {
         let (meters, instruction) = navCountdownToNextTurn
         let instr = instruction ?? "Slijedite rutu"
+        let rainText = appState.weatherRainInMinutes.map { "Kiša za \($0) min" } ?? ""
         return ZStack {
-            HStack(spacing: 12) {
-                Image(systemName: navTurnIcon(instr))
-                    .font(.system(size: 28))
-                    .foregroundStyle(islandColors.accentGreen)
-                VStack(spacing: 4) {
-                    Text(instr)
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(islandColors.title)
-                        .multilineTextAlignment(.center)
-                        .lineLimit(2)
-                    Text(meters >= 0 ? "Za \(Int(meters)) m" : "—")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(islandColors.secondary)
+            VStack(spacing: 8) {
+                HStack(spacing: 12) {
+                    Image(systemName: navTurnIcon(instr))
+                        .font(.system(size: 28))
+                        .foregroundStyle(islandColors.accentGreen)
+                    VStack(spacing: 4) {
+                        Text(instr)
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(islandColors.title)
+                            .multilineTextAlignment(.center)
+                            .lineLimit(2)
+                        Text(meters >= 0 ? "Za \(Int(meters)) m" : "—")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundStyle(islandColors.secondary)
+                    }
+                    .frame(maxWidth: .infinity)
                 }
-                .frame(maxWidth: .infinity)
+                HStack(spacing: 8) {
+                    Text(appState.weatherLocationName)
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(islandColors.title)
+                    Text(appState.weatherCondition)
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(islandColors.secondary)
+                    Text("\(appState.weatherTemperatureCelsius) °C")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(islandColors.title)
+                    if !rainText.isEmpty {
+                        Text(rainText)
+                            .font(.system(size: 10, weight: .medium))
+                            .foregroundStyle(islandColors.accentGreen)
+                    }
+                }
             }
             .padding(.horizontal, 14)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -1885,44 +1906,49 @@ struct PorcheIslandView: View {
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 16) {
                     statsSectionTitle("1. Live Dashboard")
-                    statsRow("Brzina", "—")
-                    statsRow("Baterija", "—")
-                    statsRow("Doseg", "—")
-                    statsRow("Mod", "—")
-                    statsRow("Prijenos", "—")
-                    statsRow("Prijeđeno (vožnja)", "—")
-                    statsRow("Vrijeme vožnje", "—")
+                    statsRow("Brzina", graphLiveSpeed)
+                    statsRow("Baterija", graphLiveBattery)
+                    statsRow("Doseg", graphLiveRange)
+                    statsRow("Mod", graphLiveMod)
+                    statsRow("Prijenos", graphLiveGear)
+                    statsRow("Prijeđeno (vožnja)", graphLiveDistance)
+                    statsRow("Vrijeme vožnje", graphLiveDuration)
                     statsSectionTitle("2. Performanse (Telemetrija)")
-                    statsRow("Kadenca", "—")
-                    statsRow("Snaga vozača", "—")
-                    statsRow("Snaga motora", "—")
-                    statsRow("Okretni moment", "—")
-                    statsRow("Potrošnja", "—")
-                    statsRow("Prosječna brzina", "—")
-                    statsRow("Maks. brzina", "—")
+                    statsRow("Kadenca", graphTelemetryCadence)
+                    statsRow("Snaga vozača", graphTelemetryRiderPower)
+                    statsRow("Snaga motora", graphTelemetryMotorPower)
+                    statsRow("Okretni moment", graphTelemetryTorque)
+                    statsRow("Potrošnja", graphTelemetryConsumption)
+                    statsRow("Prosječna brzina", graphTelemetryAvgSpeed)
+                    statsRow("Maks. brzina", graphTelemetryMaxSpeed)
                     statsSectionTitle("3. Topografija i teren")
-                    statsRow("Nadmorska visina", "—")
-                    statsRow("Nagib", "—")
-                    statsRow("Ukupni uspon", "—")
-                    statsRow("Ukupni spust", "—")
-                    statsRow("Maks. nagib", "—")
-                    statsRow("VAM", "—")
+                    statsRow("Nadmorska visina", graphTrackAltitude)
+                    statsRow("Nagib", graphTrackGradient)
+                    statsRow("Ukupni uspon", graphTrackAscent)
+                    statsRow("Ukupni spust", graphTrackDescent)
+                    statsRow("Maks. nagib", graphTrackMaxGradient)
+                    statsRow("VAM", graphTrackVam)
+                    if !(appState.activeRoute?.elevationProfile.isEmpty ?? true) {
+                        ElevationChartView(elevationData: appState.activeRoute?.elevationProfile ?? [])
+                            .frame(height: 100)
+                            .padding(.vertical, 8)
+                    }
                     statsSectionTitle("4. Zdravlje sustava")
-                    statsRow("Temperatura motora", "—")
-                    statsRow("Temperatura baterije", "—")
-                    statsRow("Tlak guma", "—")
-                    statsRow("Zdravlje baterije (SOH)", "—")
-                    statsRow("Ciklusi punjenja", "—")
-                    statsRow("Do servisa", "—")
+                    statsRow("Temperatura motora", graphDiagnosticsMotorTemp)
+                    statsRow("Temperatura baterije", graphDiagnosticsBatteryTemp)
+                    statsRow("Tlak guma", graphDiagnosticsTirePressure)
+                    statsRow("Zdravlje baterije (SOH)", graphDiagnosticsSoh)
+                    statsRow("Ciklusi punjenja", graphDiagnosticsCycles)
+                    statsRow("Do servisa", graphDiagnosticsService)
                     statsSectionTitle("5. Povijest (tjedan / mjesec)")
-                    statsRow("Kilometraža (odometar)", "—")
-                    statsRow("Tjedni cilj", "—")
-                    statsRow("Ušteda CO2", "—")
-                    statsRow("Kalorije", "—")
-                    statsRow("Vrijeme u Eco", "—")
-                    statsRow("Vrijeme u Turbo", "—")
+                    statsRow("Kilometraža (odometar)", graphHistoryOdometer)
+                    statsRow("Tjedni cilj", graphHistoryWeeklyGoal)
+                    statsRow("Ušteda CO2", graphHistoryCo2)
+                    statsRow("Kalorije", graphHistoryCalories)
+                    statsRow("Vrijeme u Eco", graphHistoryEco)
+                    statsRow("Vrijeme u Turbo", graphHistoryTurbo)
                     statsSectionTitle("6. Pametni uvidi")
-                    statsRow("Preporučeni tlak", "—")
+                    statsRow("Preporučeni tlak", graphInsightPressure)
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 14)
@@ -1981,6 +2007,92 @@ struct PorcheIslandView: View {
         }
         .padding(.vertical, 4)
     }
+
+    private var graphLiveSpeed: String {
+        if appState.isRouteActive { return "\(appState.navigationSpeed) km/h" }
+        let v = appState.rideStatistics.live.speedKmh
+        return v > 0 ? String(format: "%.0f km/h", v) : "—"
+    }
+    private var graphLiveBattery: String {
+        if appState.isRouteActive { return "\(batteryPercent) %" }
+        let p = appState.rideStatistics.live.batteryPercent
+        return p > 0 ? "\(p) %" : "—"
+    }
+    private var graphLiveRange: String {
+        if appState.isRouteActive { return String(format: "%.0f km", batteryRangeKm) }
+        let r = appState.rideStatistics.live.rangeKm
+        return r > 0 ? String(format: "%.0f km", r) : "—"
+    }
+    private var graphLiveMod: String {
+        if appState.isRouteActive { return appState.assistMode.displayTitle }
+        let m = appState.rideStatistics.live.assistModeTitle
+        return !m.isEmpty ? m : "—"
+    }
+    private var graphLiveGear: String {
+        if appState.isRouteActive { return gearRatioText }
+        let g = appState.rideStatistics.live.gearCurrent
+        return g > 0 ? "\(g)/\(appState.rideStatistics.live.gearMax)" : "—"
+    }
+    private var graphLiveDistance: String {
+        let d = appState.rideStatistics.live.distanceThisRideKm
+        if d > 0 { return String(format: "%.1f km", d) }
+        if let route = appState.activeRoute, !route.waypoints.isEmpty {
+            let totalM = route.steps.reduce(0.0) { $0 + Double($1.distanceMeters) }
+            let km = (totalM / 1000) * appState.routeProgressAlongLine
+            return String(format: "%.1f km", km)
+        }
+        return "—"
+    }
+    private var graphLiveDuration: String {
+        let m = appState.rideStatistics.live.rideDurationMinutes
+        if m > 0 { return "\(m) min" }
+        guard let start = appState.tripStartedAt, appState.isRouteActive else { return "—" }
+        let sec = Date().timeIntervalSince(start)
+        let min = Int(sec / 60)
+        return "\(min) min"
+    }
+    private var graphTelemetryCadence: String { appState.rideStatistics.telemetry.cadenceRpm > 0 ? "\(appState.rideStatistics.telemetry.cadenceRpm) o/min" : "—" }
+    private var graphTelemetryRiderPower: String { appState.rideStatistics.telemetry.riderPowerW > 0 ? "\(appState.rideStatistics.telemetry.riderPowerW) W" : "—" }
+    private var graphTelemetryMotorPower: String { appState.rideStatistics.telemetry.motorPowerW > 0 ? "\(appState.rideStatistics.telemetry.motorPowerW) W" : "—" }
+    private var graphTelemetryTorque: String { appState.rideStatistics.telemetry.torqueNm > 0 ? String(format: "%.1f Nm", appState.rideStatistics.telemetry.torqueNm) : "—" }
+    private var graphTelemetryConsumption: String {
+        if let w = appState.motorConsumptionWatts, w != 0 { return "\(w) W" }
+        let c = appState.rideStatistics.telemetry.energyConsumptionWhPerKm
+        return c > 0 ? String(format: "%.1f Wh/km", c) : "—"
+    }
+    private var graphTelemetryAvgSpeed: String { appState.rideStatistics.telemetry.averageSpeedKmh > 0 ? String(format: "%.0f km/h", appState.rideStatistics.telemetry.averageSpeedKmh) : "—" }
+    private var graphTelemetryMaxSpeed: String { appState.rideStatistics.telemetry.maxSpeedKmh > 0 ? String(format: "%.0f km/h", appState.rideStatistics.telemetry.maxSpeedKmh) : "—" }
+    private var graphTrackAltitude: String { appState.rideStatistics.track.altitudeM != 0 ? String(format: "%.0f m", appState.rideStatistics.track.altitudeM) : "—" }
+    private var graphTrackGradient: String { appState.rideStatistics.track.gradientPercent != 0 ? String(format: "%.1f %%", appState.rideStatistics.track.gradientPercent) : "—" }
+    private var graphTrackAscent: String { appState.rideStatistics.track.totalAscentM > 0 ? String(format: "%.0f m", appState.rideStatistics.track.totalAscentM) : "—" }
+    private var graphTrackDescent: String { appState.rideStatistics.track.totalDescentM > 0 ? String(format: "%.0f m", appState.rideStatistics.track.totalDescentM) : "—" }
+    private var graphTrackMaxGradient: String { appState.rideStatistics.track.maxGradientPercent != 0 ? String(format: "%.1f %%", appState.rideStatistics.track.maxGradientPercent) : "—" }
+    private var graphTrackVam: String { appState.rideStatistics.track.vamMperHour > 0 ? String(format: "%.0f m/h", appState.rideStatistics.track.vamMperHour) : "—" }
+    private var graphDiagnosticsMotorTemp: String {
+        if let t = appState.motorTempCelsius { return "\(t) °C" }
+        return appState.rideStatistics.diagnostics.motorTempC != 0 ? String(format: "%.0f °C", appState.rideStatistics.diagnostics.motorTempC) : "—"
+    }
+    private var graphDiagnosticsBatteryTemp: String {
+        if let t = appState.batteryTempCelsius { return "\(t) °C" }
+        return appState.rideStatistics.diagnostics.batteryTempC != 0 ? String(format: "%.0f °C", appState.rideStatistics.diagnostics.batteryTempC) : "—"
+    }
+    private var graphDiagnosticsTirePressure: String {
+        let f = appState.rideStatistics.diagnostics.tirePressureFrontBar
+        let r = appState.rideStatistics.diagnostics.tirePressureRearBar
+        if f > 0 || r > 0 { return String(format: "%.1f / %.1f bar", f, r) }
+        return "—"
+    }
+    private var graphDiagnosticsSoh: String { appState.rideStatistics.diagnostics.batterySohPercent > 0 ? "\(appState.rideStatistics.diagnostics.batterySohPercent) %" : "—" }
+    private var graphDiagnosticsCycles: String { appState.rideStatistics.diagnostics.chargeCycles > 0 ? "\(appState.rideStatistics.diagnostics.chargeCycles)" : "—" }
+    private var graphDiagnosticsService: String { appState.rideStatistics.diagnostics.kmUntilService > 0 ? String(format: "%.0f km", appState.rideStatistics.diagnostics.kmUntilService) : "—" }
+    private var graphHistoryOdometer: String { appState.rideStatistics.history.odometerKm > 0 ? String(format: "%.0f km", appState.rideStatistics.history.odometerKm) : "—" }
+    private var graphHistoryWeeklyGoal: String { appState.rideStatistics.history.weeklyGoalKm > 0 ? String(format: "%.0f / %.0f km", appState.rideStatistics.history.weeklyDoneKm, appState.rideStatistics.history.weeklyGoalKm) : "—" }
+    private var graphHistoryCo2: String { appState.rideStatistics.history.co2SavedKg > 0 ? String(format: "%.1f kg", appState.rideStatistics.history.co2SavedKg) : "—" }
+    private var graphHistoryCalories: String { appState.rideStatistics.history.caloriesBurned > 0 ? "\(appState.rideStatistics.history.caloriesBurned) kcal" : (appState.isRouteActive ? "\(tripCaloriesForDisplay) kcal" : "—") }
+    private var graphHistoryEco: String { appState.rideStatistics.history.timeInEcoPercent > 0 ? String(format: "%.0f %%", appState.rideStatistics.history.timeInEcoPercent) : "—" }
+    private var graphHistoryTurbo: String { appState.rideStatistics.history.timeInTurboPercent > 0 ? String(format: "%.0f %%", appState.rideStatistics.history.timeInTurboPercent) : "—" }
+    private var graphInsightPressure: String { appState.rideStatistics.insights.recommendedPressureBar > 0 ? String(format: "%.1f bar", appState.rideStatistics.insights.recommendedPressureBar) : "—" }
+
     private let bikePartIconSize: CGFloat = 28
     private var bikeContent: some View {
         ScrollView(.vertical, showsIndicators: false) {

@@ -66,9 +66,6 @@
     "0:00 min" : {
 
     },
-    "0%" : {
-
-    },
     "2D" : {
 
     },
@@ -159,9 +156,6 @@
 
     },
     "Dozvole" : {
-
-    },
-    "Elevation" : {
 
     },
     "Elevation Route" : {
@@ -334,6 +328,9 @@
 
     },
     "Upute će se prikazati tijekom navigacije" : {
+
+    },
+    "Visinska profil" : {
 
     },
     "Weather" : {

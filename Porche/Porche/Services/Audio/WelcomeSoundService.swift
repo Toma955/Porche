@@ -3,7 +3,6 @@ import AVFoundation
 enum WelcomeSoundService {
     private static var welcomePlayer: AVAudioPlayer?
 
-    /// Play welcome sound (e.g. when user enters App from island). Does not check hasPlayed.
     static func playWelcomeSound() {
         if ProcessInfo.processInfo.arguments.contains("--uitesting") { return }
         guard let url = urlForWelcomeSound() else { return }

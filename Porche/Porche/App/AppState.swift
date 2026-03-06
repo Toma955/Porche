@@ -29,11 +29,8 @@ final class AppState: ObservableObject {
     @Published var mapStyle: MapTerrainStyle = .standard
     @Published var mapCenter: CLLocationCoordinate2D = CLLocationCoordinate2D(latitude: 45.8129, longitude: 15.9775)
     @Published var routeProgressAlongLine: Double = 0
-    /// Progress (0...1) along the route for the map camera pivot. Forward/backward buttons change this; bike stays at routeProgressAlongLine.
     @Published var mapPivotProgress: Double = 0
-    /// Total route length in km (set when route is set), for distance-traveled and range decrease.
     @Published var routeTotalLengthKm: Double = 0
-    /// Battery range (km) at route start, for decreasing display as user travels.
     @Published var routeStartBatteryRangeKm: Double = 0
     @Published var isNightRidingMode: Bool = false
     @Published var motorTempCelsius: Int? = 0
@@ -46,35 +43,28 @@ final class AppState: ObservableObject {
     @Published var saveFolderPath: String = ""
     @Published var isDemoMode: Bool = false
     @Published var devMessages: [DevMessage] = []
-    /// When false, central display shows Porche logo until user completes "App" welcome (message + sound + 3D).
     @Published var hasCompletedAppWelcome: Bool = false
-    /// When true, island shows "Porche EBike spojen" during App entry sequence.
     @Published var isShowingAppWelcomeMessage: Bool = false
-    /// App otključan: prikazan je 3D bicikl i "Porche Ebike" (nakon dovršenog welcomea).
     @Published var isAppUnlocked: Bool = false
-    /// Vožnja krenula: korisnik je ušao u način vožnje (karta/ride).
     @Published var isRideStarted: Bool = false
-    /// Koristi se navigacija: vožnja je aktivna s aktivnom rutom.
     @Published var isNavigationInUse: Bool = false
     var demoSimulationTask: Task<Void, Never>?
     private let devMessagesMaxCount = 100
 
-    // Gear mode (pill): omjer 1/3 i 0/12, mod AUTO ili OFF
     @Published var gearModeSmallValue: Int = 1
     @Published var isAutoGearOn: Bool = false
 
-    // Charging indicator: motor % (0–100), baterija % (0–20)
     @Published var chargingMotorPercent: Double = 0
     @Published var chargingBatteryPercent: Double = 0
 
-    // Trip: početak vožnje za brojač 0:00:00 i kcal
     @Published var tripStartedAt: Date?
 
-    // Vremenska prognoza (defaultna postavka)
     @Published var weatherLocationName: String = "Zagreb"
     @Published var weatherCondition: String = "Oblačno"
     @Published var weatherRainInMinutes: Int? = 15
     @Published var weatherTemperatureCelsius: Int = 15
+
+    @Published var motorConsumptionWatts: Int? = nil
 
     func addDevMessage(category: DevMessageCategory, _ text: String) {
         let entry = DevMessage(category: category, text: text, date: Date())

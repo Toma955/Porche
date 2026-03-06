@@ -84,7 +84,6 @@ private func totalRouteLengthMeters(waypoints: [CLLocationCoordinate2D]) -> Doub
     return total
 }
 
-/// Progress (0...1) for a point that is `offsetMeters` along the route from `fromProgress`. Positive = toward end.
 private func progress(atOffsetMeters offsetMeters: Double, fromProgress: Double, along waypoints: [CLLocationCoordinate2D]) -> Double {
     let total = totalRouteLengthMeters(waypoints: waypoints)
     guard total > 0 else { return fromProgress }
@@ -92,7 +91,6 @@ private func progress(atOffsetMeters offsetMeters: Double, fromProgress: Double,
     return min(1, max(0, fromProgress + progressDelta))
 }
 
-/// Pivot = center (camera). Front = prednji kotač, rear = zadnji kotač. Svi idu po plavoj liniji.
 private let halfBikeLengthMeters: Double = 0.75
 
 private let bikeModelForwardOffset: Double = 0
@@ -101,10 +99,9 @@ struct IslandCentralDisplayView: View {
     @EnvironmentObject private var locationManager: LocationManager
     @State private var isBikeSceneReady = false
     @State private var homeBikeKey = 0
-    /// Kad true, onMapCameraChange ne prepisuje mapCenter (kamera vođena iz bicikla/pivota).
     @State private var isSyncingFromPivot = false
-    /// Coalescing: najviše jedan sync po run loopu da izbjegnemo "multiple updates per frame".
     @State private var cameraSyncScheduled = false
+    @State private var lastRouteProgressSyncTime: Date?
     @State private var mapCameraPosition: MapCameraPosition = .camera(
         MapCamera(
             centerCoordinate: CLLocationCoordinate2D(latitude: 45.8129, longitude: 15.9775),
@@ -134,6 +131,9 @@ struct IslandCentralDisplayView: View {
                 isLocationValid: isLocationValidForMap
             ))
             .onChange(of: appState.routeProgressAlongLine) { _, _ in
+                let now = Date()
+                if let last = lastRouteProgressSyncTime, now.timeIntervalSince(last) < 0.06 { return }
+                lastRouteProgressSyncTime = now
                 scheduleCameraSyncToBike()
             }
             .onChange(of: appState.focusMapOnBikeTrigger) { _, _ in
@@ -230,7 +230,6 @@ struct IslandCentralDisplayView: View {
         mapCameraPosition = cameraFromAppState
     }
 
-    /// Postavi kameru na bicikl. Jedan sync po run loopu da izbjegnemo "multiple updates per frame".
     private func scheduleCameraSyncToBike() {
         guard appState.activeRoute.map({ !$0.waypoints.isEmpty }) ?? false else { return }
         guard !cameraSyncScheduled else { return }
@@ -330,16 +329,20 @@ struct IslandCentralDisplayView: View {
         }
         .onMapCameraChange(frequency: .onEnd) { context in
                     guard !isSyncingFromPivot else { return }
-                    let routeActive = appState.isRouteActive,
-                        hasWaypoints = (appState.activeRoute?.waypoints.isEmpty ?? true) == false
-                    if !routeActive || !hasWaypoints {
-                        appState.mapCenter = context.camera.centerCoordinate
-                    }
-                    appState.mapCameraDistance = context.camera.distance
-                    appState.mapHeading = context.camera.heading
-                    // Kad je ruta aktivna, kamera stalno gleda pivot – vrati je na pivot ako je korisnik pomaknuo.
-                    if routeActive && hasWaypoints {
-                        mapCameraPosition = cameraFromAppState
+                    let routeActive = appState.isRouteActive
+                    let hasWaypoints = (appState.activeRoute?.waypoints.isEmpty ?? true) == false
+                    let center = context.camera.centerCoordinate
+                    let distance = context.camera.distance
+                    let heading = context.camera.heading
+                    DispatchQueue.main.async {
+                        if !routeActive || !hasWaypoints {
+                            appState.mapCenter = center
+                        }
+                        appState.mapCameraDistance = distance
+                        appState.mapHeading = heading
+                        if routeActive && hasWaypoints {
+                            mapCameraPosition = cameraFromAppState
+                        }
                     }
                 }
     }
@@ -398,9 +401,14 @@ struct IslandCentralDisplayView: View {
         }
     }
 }
+private final class MapSyncCoalescer {
+    var scheduled = false
+}
+
 private struct IslandCentralMapModifier: ViewModifier {
     @EnvironmentObject private var appState: AppState
     @EnvironmentObject private var locationManager: LocationManager
+    @State private var mapSyncCoalescer = MapSyncCoalescer()
     let onSync: () -> Void
     let onRequestLocation: () -> Void
     let onCenter: (CLLocationCoordinate2D) -> Void
@@ -438,12 +446,15 @@ private struct IslandCentralMapModifier: ViewModifier {
                 }
             }
             .onChange(of: appState.routeProgressAlongLine) { _, progress in
-                guard appState.routeTotalLengthKm > 0, appState.routeStartBatteryRangeKm > 0 else { return }
+                guard !appState.isDemoMode,
+                      appState.routeTotalLengthKm > 0,
+                      appState.routeStartBatteryRangeKm > 0 else { return }
                 let distanceTraveledKm = appState.routeTotalLengthKm * progress
                 let remainingKm = max(0, appState.routeStartBatteryRangeKm - distanceTraveledKm)
                 if var bat = appState.batteryStatus {
                     bat.estimatedRangeKm = remainingKm
-                    appState.batteryStatus = bat
+                    let newBat = bat
+                    DispatchQueue.main.async { appState.batteryStatus = newBat }
                 }
             }
             .onChange(of: appState.isRouteActive) { _, active in
@@ -451,11 +462,28 @@ private struct IslandCentralMapModifier: ViewModifier {
             }
     }
     private func addMapSyncHandlers<V: View>(_ view: V) -> some View {
-        view
-            .onChange(of: MapCenterValue(appState.mapCenter)) { _, _ in onSync() }
-            .onChange(of: appState.mapCameraDistance) { _, _ in onSync() }
-            .onChange(of: appState.mapHeading) { _, _ in onSync() }
-            .onChange(of: appState.mapIs3D) { _, _ in onSync() }
+        let c = mapSyncCoalescer
+        return view
+            .onChange(of: MapCenterValue(appState.mapCenter)) { _, _ in
+                if c.scheduled { return }
+                c.scheduled = true
+                DispatchQueue.main.async { onSync(); c.scheduled = false }
+            }
+            .onChange(of: appState.mapCameraDistance) { _, _ in
+                if c.scheduled { return }
+                c.scheduled = true
+                DispatchQueue.main.async { onSync(); c.scheduled = false }
+            }
+            .onChange(of: appState.mapHeading) { _, _ in
+                if c.scheduled { return }
+                c.scheduled = true
+                DispatchQueue.main.async { onSync(); c.scheduled = false }
+            }
+            .onChange(of: appState.mapIs3D) { _, _ in
+                if c.scheduled { return }
+                c.scheduled = true
+                DispatchQueue.main.async { onSync(); c.scheduled = false }
+            }
     }
 }
 #Preview {
